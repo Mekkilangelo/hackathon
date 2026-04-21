@@ -1,0 +1,47 @@
+# WDS Project Outline - Sebastian
+# Generated: 2026-04-21
+
+project:
+  name: "Sebastian"
+  full_name: "Sebastian - Le Majordome Michelin"
+  type: greenfield
+  product_complexity: complex
+  platform: web-app-mobile-first
+
+configuration:
+  tech_stack: react-next
+  component_library: shadcn-ui
+  skip_design_system: true
+  root_folder: design-process
+  brief_level: complete
+  strategic_analysis: simplified
+  communication_language: fr
+
+existing_materials:
+  has_materials: true
+  files:
+    - path: base.md
+      type: brainstorming
+      description: "Brainstorming complet - concept, DA, palette couleurs, typographie, plan d'action"
+
+project_context:
+  stakes: personal-hobby
+  collaboration_style: balanced
+  user_role: product-owner
+  recommendation_style: recommend-with-rationale
+  team_size: 2-3
+  format: hackathon
+
+working_relationship:
+  stakeholders: none
+  political_sensitivities: none
+
+phases:
+  phase_1_brief: enabled
+  phase_2_trigger_map: skipped  # simplified strategic analysis in Phase 1
+  phase_3_scenarios: enabled
+  phase_4_ux_design: enabled
+  phase_5_development: enabled
+  phase_6_design_system: skipped  # shadcn/ui
+  phase_7_launch: enabled
+  phase_8_evolution: disabled  # greenfield
