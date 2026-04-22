@@ -4,12 +4,12 @@ Application web mobile-first qui réinvente la prescription gastronomique du Gui
 
 ## Stack technique
 
-| Couche | Technologie |
-|--------|-------------|
-| Frontend | Next.js 16 · React 19 · shadcn/ui · Tailwind CSS 4 |
-| Backend | Express · TypeScript · Zod |
-| Base de données | PostgreSQL 16 · Prisma ORM |
-| IA | LLM API (Claude) |
+| Couche          | Technologie                                        |
+| --------------- | -------------------------------------------------- |
+| Frontend        | Next.js 16 · React 19 · shadcn/ui · Tailwind CSS 4 |
+| Backend         | Express · TypeScript · Zod                         |
+| Base de données | PostgreSQL 16 · Prisma ORM                         |
+| IA              | LLM API (Claude)                                   |
 
 ## Architecture
 
@@ -64,25 +64,25 @@ cd frontend && npm run dev
 
 ### Backend (`/backend`)
 
-| Commande | Description |
-|----------|-------------|
-| `npm run dev` | Serveur de développement (hot reload) |
-| `npm run build` | Compilation TypeScript |
-| `npm run start` | Serveur de production |
-| `npm run seed` | Insérer les restaurants de test |
-| `npm run db:migrate` | Lancer les migrations Prisma |
-| `npm run db:generate` | Générer le client Prisma |
-| `npm run db:studio` | Interface visuelle Prisma |
-| `npm run lint` | Vérification ESLint |
+| Commande              | Description                           |
+| --------------------- | ------------------------------------- |
+| `npm run dev`         | Serveur de développement (hot reload) |
+| `npm run build`       | Compilation TypeScript                |
+| `npm run start`       | Serveur de production                 |
+| `npm run seed`        | Insérer les restaurants de test       |
+| `npm run db:migrate`  | Lancer les migrations Prisma          |
+| `npm run db:generate` | Générer le client Prisma              |
+| `npm run db:studio`   | Interface visuelle Prisma             |
+| `npm run lint`        | Vérification ESLint                   |
 
 ### Frontend (`/frontend`)
 
-| Commande | Description |
-|----------|-------------|
-| `npm run dev` | Serveur de développement Next.js |
-| `npm run build` | Build de production |
-| `npm run start` | Serveur de production |
-| `npm run lint` | Vérification ESLint |
+| Commande        | Description                      |
+| --------------- | -------------------------------- |
+| `npm run dev`   | Serveur de développement Next.js |
+| `npm run build` | Build de production              |
+| `npm run start` | Serveur de production            |
+| `npm run lint`  | Vérification ESLint              |
 
 ## Structure du projet
 
@@ -100,21 +100,29 @@ cd frontend && npm run dev
 
 ## API Endpoints
 
-| Méthode | Route | Description |
-|---------|-------|-------------|
-| `GET` | `/api/health` | Health check |
-| `POST` | `/api/users` | Créer un utilisateur |
-| `GET` | `/api/users/:id` | Récupérer un utilisateur |
-| `POST` | `/api/users/:id/profile` | Sauvegarder le profil |
-| `PUT` | `/api/users/:id/profile` | Mettre à jour le profil |
-| `GET` | `/api/restaurants` | Lister les restaurants (filtres) |
-| `GET` | `/api/restaurants/:id` | Détail d'un restaurant |
-| `POST` | `/api/chat/sessions` | Créer une session chat |
-| `POST` | `/api/chat/sessions/:id/messages` | Envoyer un message |
-| `GET` | `/api/chat/sessions/:id/messages` | Historique |
-| `POST` | `/api/recommendations` | Obtenir des recommandations |
-| `POST` | `/api/recommendations/surprise` | Surprends-moi |
+| Méthode | Route                             | Description                      |
+| ------- | --------------------------------- | -------------------------------- |
+| `GET`   | `/api/health`                     | Health check                     |
+| `POST`  | `/api/users`                      | Créer un utilisateur             |
+| `GET`   | `/api/users/:id`                  | Récupérer un utilisateur         |
+| `POST`  | `/api/users/:id/profile`          | Sauvegarder le profil            |
+| `PUT`   | `/api/users/:id/profile`          | Mettre à jour le profil          |
+| `GET`   | `/api/restaurants`                | Lister les restaurants (filtres) |
+| `GET`   | `/api/restaurants/:id`            | Détail d'un restaurant           |
+| `POST`  | `/api/chat/sessions`              | Créer une session chat           |
+| `POST`  | `/api/chat/sessions/:id/messages` | Envoyer un message               |
+| `GET`   | `/api/chat/sessions/:id/messages` | Historique                       |
+| `POST`  | `/api/recommendations`            | Obtenir des recommandations      |
+| `POST`  | `/api/recommendations/surprise`   | Surprends-moi                    |
 
 ## Équipe
 
 Projet réalisé dans le cadre d'un hackathon ESGI — M1.
+
+## Setup LLM
+
+```bash
+# à la racine du repo (pas en mode devcontainer)
+# installer un modèle pour ollama
+docker compose -f docker-compose.dev.yml exec ollama ollama pull phi3
+```
