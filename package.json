@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Sebastian — Le Majordome Michelin",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
     "dev:front": "cd frontend && npm run dev",
     "dev:back": "cd backend && npm run dev",
