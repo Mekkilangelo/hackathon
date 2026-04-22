@@ -2,6 +2,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type MichelinTypeDTO =
+  | "ETOILE"
+  | "BIB_GOURMAND"
+  | "ETOILE_VERTE"
+  | "etoile"
+  | "bib-gourmand"
+  | "etoile-verte";
+
 export interface UserDTO {
   id: string;
   name: string;
@@ -27,16 +35,17 @@ export interface RestaurantCardDTO {
   name: string;
   cuisine: string;
   priceRange: number;
-  michelinType: "etoile" | "bib-gourmand" | "etoile-verte";
+  michelinType: MichelinTypeDTO;
   imageUrl: string;
   matchScore: number;
   tags: string[];
+  zone: string;
+  ambiance: string;
 }
 
 export interface RestaurantDetailDTO extends RestaurantCardDTO {
   description: string;
   address: string;
-  ambiance: string;
   hours: Record<string, string>;
   gallery: string[];
 }
