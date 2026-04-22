@@ -6,283 +6,272 @@
 
 | Membre | Rôle | Epics |
 |--------|------|-------|
-| **Dev A** | Frontend | Epic 1 (Setup Front) + Epic 3 (Onboarding) + Epic 6 (Résultats & Fiches) |
-| **Dev B** | Backend / API | Epic 2 (Setup Back + DB) + Epic 4 (Modules User & Restaurant) |
-| **Dev C** | IA / Recommendation | Epic 5 (Chat Sebastian + Module Recommendation) + Epic 7 (Surprise) |
+| **Dev A** | Frontend | Epic 1 + Epic 3 + Epic 6 |
+| **Dev B** | Backend / IA | Epic 2 + Epic 4 + Epic 5 |
+| **Dev C** | Fullstack / Intégration | Epic 7 + Epic 8 + Epic 9 |
 
 ### Si équipe de 2
 
 | Membre | Rôle | Epics |
 |--------|------|-------|
-| **Dev A** | Frontend complet | Epics 1, 3, 6, 7 (front) |
-| **Dev B** | Backend complet | Epics 2, 4, 5 |
+| **Dev A** | Frontend + Back Office | Epics 1, 3, 6, 8 |
+| **Dev B** | Backend + Deploy | Epics 2, 4, 5, 7, 9 |
 
 ---
 
-## Epic 1 : Setup Frontend + Layout Global
-**Assigné : Dev A**
-**Durée : 1-2h**
+## Statut des Epics
 
-- [ ] **1.1** Init Next.js + shadcn/ui + Tailwind
-  - `npx create-next-app@latest frontend --typescript --tailwind --app`
-  - Installer shadcn/ui (`npx shadcn@latest init`)
-  - Configurer `tailwind.config.ts` avec la palette Brutaliste-Chic
-  - `globals.css` : design tokens (couleurs, fonts)
-
-- [ ] **1.2** Layout global mobile-first
-  - `layout.tsx` : dark mode par défaut, meta viewport
-  - `Header.tsx` : logo Sebastian
-  - `BottomNav.tsx` : navigation mobile (Accueil, Chat, Profil)
-  - Container centré max-width 430px sur desktop
-
-- [ ] **1.3** Splash Screen / Landing
-  - Logo Sebastian animé (CSS)
-  - Tagline + CTA "Découvrir mes goûts" → `/onboarding`
-
-- [ ] **1.4** Client API (`lib/api.ts`)
-  - Classe/module centralisant les appels HTTP vers le backend
-  - Base URL configurable via env var `NEXT_PUBLIC_API_URL`
-  - Méthodes typées par endpoint (users, restaurants, chat, recommendations)
+| Epic | Nom | Statut |
+|------|-----|--------|
+| 1 | Setup Frontend + Layout | ✅ Terminé |
+| 2 | Setup Backend + DB | ✅ Terminé |
+| 3 | Onboarding Quiz | ✅ Terminé |
+| 4 | Modules User & Restaurant | ✅ Terminé |
+| 5 | Chat Sebastian + Recommendation | 🔧 En cours (collègue) |
+| 6 | Pages Résultats & Fiches | ❌ À faire |
+| 7 | Bouton Surprise + Polish | ❌ À faire |
+| 8 | Back Office (admin) | ❌ À faire — **1pt barème** |
+| 9 | Déploiement | ❌ À faire — **2pts barème** |
 
 ---
 
-## Epic 2 : Setup Backend + Base de données
-**Assigné : Dev B**
-**Durée : 1-2h**
+## Epic 1 : Setup Frontend + Layout ✅
+**Statut : Terminé**
 
-- [ ] **2.1** Init projet Express + TypeScript
-  - Structure modulaire : `src/modules/`, `src/shared/`
-  - `src/index.ts` : Express, CORS, JSON parser, error handler
-  - `src/router.ts` : agrégation des routes par module
-  - Scripts : `dev` (ts-node-dev), `build`, `seed`
-
-- [ ] **2.2** Setup Prisma + PostgreSQL
-  - `prisma init`, configurer `DATABASE_URL`
-  - Écrire le `schema.prisma` complet (User, UserProfile, Restaurant, ChatSession, ChatMessage)
-  - `prisma migrate dev` — migration initiale
-  - `prisma generate`
-
-- [ ] **2.3** Seed des restaurants
-  - `prisma/seed.ts` : insérer 20-30 restaurants
-  - Données réalistes : noms, cuisines, zones Paris, prix, tags
-  - Types Michelin variés (étoile, Bib Gourmand, Étoile Verte)
-  - Images Unsplash (URLs directes food/restaurant)
-
-- [ ] **2.4** Shared : middleware & interfaces
-  - `shared/middleware/error-handler.ts` : catch global, format erreur JSON
-  - `shared/middleware/validate.ts` : validation DTO (zod)
-  - `shared/interfaces/repository.interface.ts` : interface générique Repository
+- [x] Init Next.js + shadcn/ui + Tailwind
+- [x] Design tokens CSS (palette Brutaliste-Chic)
+- [x] Layout global mobile-first (Header, BottomNav)
+- [x] Splash Screen / Landing
+- [x] Client API (`lib/api.ts`)
 
 ---
 
-## Epic 3 : Onboarding — Quiz Empreinte Gastronomique
-**Assigné : Dev A**
-**Durée : 2-3h**
-**Dépendance : Epic 1 (setup front), Epic 4.1 (POST /api/users + profile)**
+## Epic 2 : Setup Backend + DB ✅
+**Statut : Terminé**
 
-- [ ] **3.1** Composants Quiz
-  - `QuizStep.tsx` : container étape avec transition animée
-  - `QuizProgress.tsx` : barre de progression (étape X/7)
-  - `QuizOption.tsx` : carte cliquable (single ou multi-select)
+- [x] Init Express + TypeScript (structure modulaire)
+- [x] Setup Prisma + PostgreSQL + Docker Compose
+- [x] Schema Prisma (5 modèles, enums, indexes, @@map)
+- [x] Seed 20 restaurants
+- [x] Shared middleware (error handler, validation Zod)
+- [x] Singleton PrismaClient (`shared/database/prisma.ts`)
 
-- [ ] **3.2** Flux Quiz (7 étapes)
-  - Étape 1 : Prénom (input texte)
-  - Étape 2 : Préférences alimentaires (multi-select : vegan, halal, sans gluten, tout)
-  - Étape 3 : Budget habituel (slider/select : €, €€, €€€)
-  - Étape 4 : Ambiances préférées (multi-select : cozy, branché, rooftop, street-food, gastro)
-  - Étape 5 : Occasions de sortie (multi-select : date, amis, solo, business, famille)
-  - Étape 6 : Cuisines favorites (multi-select : française, italienne, japonaise, mexicaine, indienne, fusion)
-  - Étape 7 : Zone préférée (select quartier Paris)
-
-- [ ] **3.3** Intégration API
-  - Au submit : `POST /api/users` → créer user
-  - Puis `POST /api/users/:id/profile` → sauvegarder empreinte
-  - Stocker userId en localStorage
-  - Redirect vers `/chat`
+### Correctifs appliqués
+- [x] Enums Prisma (`MichelinType`, `ChatRole`) au lieu de strings
+- [x] Indexes sur les colonnes filtrées (cuisine, zone, michelinType, priceRange, userId, sessionId)
+- [x] `@@map()` pour convention snake_case en DB
+- [x] PrismaClient singleton (plus de `new PrismaClient()` dans chaque route)
+- [x] `.env` retiré du git, `.env.example` complété (LLM_API_KEY, LLM_MODEL)
+- [x] Config serveur étendue (config LLM)
 
 ---
 
-## Epic 4 : Modules Backend — User & Restaurant
-**Assigné : Dev B**
-**Durée : 2-3h**
-**Dépendance : Epic 2 (setup back + DB)**
+## Epic 3 : Onboarding Quiz ✅
+**Statut : Terminé**
 
-### Module User
-
-- [ ] **4.1** Couche complète User
-  - `user.dto.ts` : CreateUserDTO, UserProfileDTO
-  - `user.repository.ts` : implements IUserRepository (Prisma)
-  - `user.service.ts` : logique création user + profil
-  - `user.controller.ts` : validation input (zod) + réponse DTO
-  - `user.routes.ts` : POST /users, GET /users/:id, POST /users/:id/profile, PUT /users/:id/profile
-
-### Module Restaurant
-
-- [ ] **4.2** Couche complète Restaurant
-  - `restaurant.dto.ts` : RestaurantCardDTO, RestaurantDetailDTO
-  - `restaurant.repository.ts` : implements IRestaurantRepository (Prisma)
-    - `findByFilters()` : filtrage par cuisine, budget, zone, tags, type Michelin
-  - `restaurant.service.ts` : logique de filtrage + mapping DTO
-  - `restaurant.controller.ts` : parsing query params + réponse
-  - `restaurant.routes.ts` : GET /restaurants, GET /restaurants/:id
+- [x] Composants Quiz (QuizStep, QuizProgress, QuizOption)
+- [x] Flux 7 étapes
+- [x] Intégration API (POST /users + POST /profile)
+- [x] localStorage userId
 
 ---
 
-## Epic 5 : Chat Sebastian — Backend IA + Frontend
-**Assigné : Dev C (ou Dev B si équipe de 2)**
-**Durée : 3-4h**
-**Dépendance : Epic 2 (back), Epic 4 (modules user/resto)**
+## Epic 4 : Modules User & Restaurant ✅
+**Statut : Terminé**
+
+- [x] Module User complet (DTO, Repository, Service, Controller, Routes)
+- [x] Module Restaurant complet (filtres, DTO card/detail)
+
+### Correctifs appliqués
+- [x] DTO alignés avec enums Prisma (`MichelinType` au lieu de string)
+- [x] Import singleton Prisma au lieu de `new PrismaClient()`
+
+---
+
+## Epic 5 : Chat Sebastian + Recommendation 🔧
+**Statut : En cours (travaillé par collègue)**
 
 ### Backend — Module Chat + LLM
 
 - [ ] **5.1** LLM Service avec Proxy Pattern
   - `chat/llm/llm.interface.ts` : interface ILLMService
-  - `chat/llm/llm.service.ts` : implémentation réelle (appel API LLM)
-  - `chat/llm/llm-cache.proxy.ts` : Proxy — cache in-memory (Map), TTL 1h
-  - `chat/prompts/sebastian.prompt.ts` : system prompt du majordome
+  - `chat/llm/llm.service.ts` : appel API LLM (utiliser `config.llm.apiKey` + `config.llm.model`)
+  - `chat/llm/llm-cache.proxy.ts` : Proxy cache in-memory, TTL 1h
+  - `chat/prompts/sebastian.prompt.ts` : system prompt majordome
 
 - [ ] **5.2** Module Chat — couche complète
   - `chat.dto.ts` : CreateSessionDTO, SendMessageDTO, ChatMessageDTO
-  - `chat.repository.ts` : sessions + messages (Prisma)
-  - `chat.service.ts` : orchestration conversation
-    - Reçoit message user → construit prompt (system + profil + historique + message)
-    - Appelle LLMService (via Proxy)
-    - Parse la réponse : texte + éventuellement restaurants recommandés (JSON)
-    - Sauvegarde en DB
+  - `chat.repository.ts` : sessions + messages (utiliser `ChatRole` enum)
+  - `chat.service.ts` : orchestration (profil + historique + LLM via Proxy)
   - `chat.controller.ts` + `chat.routes.ts`
-    - POST /chat/sessions (créer session)
-    - POST /chat/sessions/:id/messages (envoyer message)
-    - GET /chat/sessions/:id/messages (historique)
+  - **Important** : importer `prisma` depuis `../../shared/database/prisma`
 
 ### Backend — Module Recommendation
 
-- [ ] **5.3** Strategy Pattern — Algorithme de matching
-  - `strategies/recommendation.strategy.ts` : interface IRecommendationStrategy
-  - `strategies/profile-match.strategy.ts` : scoring profil vs restaurant (cuisine, budget, ambiance, tags)
-  - `strategies/contextual.strategy.ts` : scoring contexte chat (occasion, mood extraits)
-  - `strategies/surprise.strategy.ts` : pondération aléatoire + diversité
+- [ ] **5.3** Strategy Pattern
+  - `strategies/recommendation.strategy.ts` : interface
+  - `strategies/profile-match.strategy.ts`
+  - `strategies/contextual.strategy.ts`
+  - `strategies/surprise.strategy.ts`
 
-- [ ] **5.4** Factory + Service Recommendation
+- [ ] **5.4** Factory + Service
   - `recommendation.factory.ts` : RecommendationContextFactory
-    - `fromChat()` : profil + historique conversation
-    - `fromSurprise()` : profil + aléatoire
-  - `recommendation.service.ts` : agrège les scores des stratégies, retourne top 2-3
+  - `recommendation.service.ts` : agrège scores, retourne top 2-3
   - `recommendation.controller.ts` + `recommendation.routes.ts`
-    - POST /recommendations (body: userId, chatSessionId)
-    - POST /recommendations/surprise (body: userId)
 
 ### Frontend — Interface Chat
 
-- [ ] **5.5** Composants Chat
-  - `ChatBubble.tsx` : bulle user (droite, or/champagne) vs Sebastian (gauche, marine)
-  - `ChatInput.tsx` : input + bouton envoyer
-  - `SebastianAvatar.tsx` : avatar étoile Michelin stylisée
-  - Suggestions rapides cliquables : "Surprends-moi", "Un dîner ce soir", "Brunch dimanche"
-
+- [ ] **5.5** Composants Chat (ChatBubble, ChatInput, SebastianAvatar)
 - [ ] **5.6** Hook useChat + page Chat
-  - `useChat.ts` : gestion état messages, appels API, loading
-  - `chat/page.tsx` : layout conversation
-  - Créer session au mount → envoyer messages → afficher réponses
-  - Quand Sebastian recommande des restos → bouton "Voir les résultats" → `/results`
 
 ---
 
-## Epic 6 : Pages Résultats & Fiche Restaurant
-**Assigné : Dev A (ou Dev C)**
-**Durée : 2-3h**
-**Dépendance : Epic 4.2 (API restaurants), Epic 5.4 (API recommendations)**
+## Epic 6 : Pages Résultats & Fiches Restaurant
+**Assigné : Dev A | Durée : 2-3h**
+**Dépendance : Epic 5.4 (API recommendations)**
 
 - [ ] **6.1** Page Résultats (`/results`)
-  - Appel GET résultats depuis state ou query params
-  - Affichage 2-3 `RestaurantCard.tsx`
-  - Chaque carte : image hero, nom, type Michelin (badge), prix, cuisine, matchScore (%)
-  - Phrase Sebastian en header : "Voici mes recommandations pour toi..."
-  - Animation apparition séquentielle (stagger)
+  - Affichage 2-3 `RestaurantCard.tsx` avec badges Michelin
+  - Phrase Sebastian en header
+  - Animation apparition stagger
 
-- [ ] **6.2** Fiche Restaurant détail (`/restaurant/[id]`)
+- [ ] **6.2** Fiche Restaurant (`/restaurant/[id]`)
   - Appel `GET /api/restaurants/:id`
-  - Hero image plein écran + galerie scroll horizontal
-  - Infos : nom, cuisine, adresse, prix, badge Michelin
-  - Description ambiance (texte)
-  - Tags en chips
-  - Horaires
-  - CTA "Réserver" (lien externe fictif)
-  - Bouton retour → résultats ou chat
+  - Hero image + galerie horizontale
+  - Infos complètes + tags + horaires
+  - CTA "Réserver"
 
 - [ ] **6.3** Composant RestaurantCard réutilisable
-  - Props typées depuis RestaurantCardDTO
-  - Variantes : compact (dans le chat) / full (page résultats)
-  - Badge Michelin coloré (étoile = or, bib = rouge, verte = vert)
+  - Variantes compact/full
+  - Badge Michelin coloré (ETOILE=or, BIB_GOURMAND=rouge, ETOILE_VERTE=vert)
 
 ---
 
-## Epic 7 : Bouton "Surprends-moi" + Polish
-**Assigné : Dev C (ou Dev A)**
-**Durée : 1-2h**
-**Dépendance : Epic 5.4 (API surprise)**
+## Epic 7 : Bouton Surprise + Polish
+**Assigné : Dev C | Durée : 1-2h**
+**Dépendance : Epic 5.4**
 
-- [ ] **7.1** Bouton Surprends-moi
-  - FAB (floating action button) accessible depuis chat et résultats
-  - Appel `POST /api/recommendations/surprise` avec userId
-  - Animation fun au clic (confetti ? spin ?)
-  - Affiche directement la fiche du restaurant choisi
+- [ ] **7.1** FAB "Surprends-moi"
+  - Appel `POST /api/recommendations/surprise`
+  - Animation au clic
+  - Affiche fiche restaurant
 
 - [ ] **7.2** Polish UI global
-  - Transitions entre pages (animations)
-  - Loading states (skeleton / spinner Sebastian)
+  - Transitions entre pages
+  - Loading states (skeleton)
   - Empty states
-  - Responsive check final
+  - Responsive check
 
 ---
 
-## Timeline Hackathon
+## Epic 8 : Back Office (Admin) — **1pt barème**
+**Assigné : Dev C (ou Dev A) | Durée : 2-3h**
+**Dépendance : Epic 4 (API restaurants)**
+
+Interface admin pour gérer les restaurants sans toucher au code.
+
+- [ ] **8.1** Page admin (`/admin`)
+  - Route protégée (password simple en env var ou basic auth)
+  - Layout simple, pas besoin de la DA Brutaliste-Chic
+
+- [ ] **8.2** Liste restaurants admin
+  - Tableau avec nom, cuisine, type Michelin, zone, prix
+  - Boutons Modifier / Supprimer par ligne
+  - Bouton Ajouter un restaurant
+
+- [ ] **8.3** Formulaire CRUD restaurant
+  - Formulaire avec tous les champs du modèle Restaurant
+  - Validation Zod côté front
+  - Appels API : POST / PUT / DELETE
+
+- [ ] **8.4** API Backend — routes admin
+  - `POST /api/admin/restaurants` : créer
+  - `PUT /api/admin/restaurants/:id` : modifier
+  - `DELETE /api/admin/restaurants/:id` : supprimer
+  - Middleware auth simple (token ou basic auth via env var)
+
+---
+
+## Epic 9 : Déploiement — **2pts barème**
+**Assigné : Dev B | Durée : 1-2h**
+**Dépendance : Toutes les features terminées**
+
+URL accessible et stable requise par le barème.
+
+- [ ] **9.1** Dockerfiles
+  - `backend/Dockerfile` : Node.js + Prisma + build TS
+  - `frontend/Dockerfile` : Next.js standalone build
+
+- [ ] **9.2** Déploiement Backend
+  - Railway / Render / Fly.io
+  - PostgreSQL managé (Railway Postgres ou Neon)
+  - Variables d'environnement configurées
+  - Migration Prisma en prod
+
+- [ ] **9.3** Déploiement Frontend
+  - Vercel (recommandé pour Next.js)
+  - Variable `NEXT_PUBLIC_API_URL` pointant vers le backend prod
+
+- [ ] **9.4** Vérifications
+  - Health check accessible
+  - CORS configuré pour le domaine prod
+  - Parcours complet fonctionnel en prod
+
+---
+
+## Hygiène appliquée (correctifs globaux)
+
+- [x] `.gitignore` racine unique (suppression du doublon frontend)
+- [x] `.env` retiré du tracking git
+- [x] `.env.example` complété
+- [x] `.prettierrc` à la racine
+- [x] ESLint configuré (backend + frontend)
+- [x] `README.md` avec instructions d'installation
+- [x] PrismaClient singleton
+- [x] Enums Prisma (MichelinType, ChatRole)
+- [x] Indexes DB sur colonnes filtrées
+- [x] Convention snake_case en DB via @@map
+
+---
+
+## Timeline mise à jour
 
 ```
-PHASE 1 — Setup parallèle (H0 → H2)
-├── Dev A : Epic 1 (Setup Front + Layout + Splash)
-├── Dev B : Epic 2 (Setup Back + DB + Seed)
-└── Dev C : Prépare prompts Sebastian + data restaurants
+FAIT ─────────────────────────────────
+✅ Epic 1 : Setup Front
+✅ Epic 2 : Setup Back + DB
+✅ Epic 3 : Quiz Onboarding
+✅ Epic 4 : Modules User & Restaurant
+✅ Hygiène : gitignore, linter, README, singleton, enums
 
-PHASE 2 — Features core en parallèle (H2 → H5)
-├── Dev A : Epic 3 (Quiz Onboarding)
-├── Dev B : Epic 4 (Modules User + Restaurant)
-└── Dev C : Epic 5.1-5.4 (Chat backend + Recommendation)
+EN COURS ─────────────────────────────
+🔧 Epic 5 : Chat Sebastian + Recommendation (collègue)
 
-PHASE 3 — Intégration + UI (H5 → H7)
-├── Dev A : Epic 6 (Résultats + Fiches)
-├── Dev B : Aide intégration + fix API
-└── Dev C : Epic 5.5-5.6 (Chat frontend) + Epic 7.1 (Surprise)
-
-PHASE 4 — Polish + Démo (H7 → H8)
-├── Tous : Epic 7.2 (Polish)
-├── Tous : Test parcours complet bout en bout
-└── Tous : Préparer la démo
+À FAIRE (par priorité) ──────────────
+1. Epic 6 : Résultats & Fiches (complète le parcours)
+2. Epic 8 : Back Office admin (1pt barème)
+3. Epic 9 : Déploiement (2pts barème)
+4. Epic 7 : Surprise + Polish
 ```
 
 ---
 
-## Dépendances critiques
+## Barème — Couverture actuelle
 
-```
-Epic 1 (Front setup) ──────────────────→ Epic 3 (Quiz)
-                                              ↓
-Epic 2 (Back setup) → Epic 4 (User/Resto) → Epic 3.3 (intégration)
-                                              ↓
-                   → Epic 5 (Chat + Reco) → Epic 6 (Résultats)
-                                              ↓
-                                         Epic 7 (Surprise)
-```
-
-**Point de synchro critique : H2** — Les setups front et back doivent être terminés pour que l'intégration commence.
-
----
-
-## Definition of Done (Hackathon)
-
-- [ ] Parcours complet : Splash → Quiz → Chat → Résultats → Fiche
-- [ ] Backend REST fonctionnel avec PostgreSQL
-- [ ] 5 design patterns implémentés et identifiables
-- [ ] UI Brutaliste-Chic fidèle à la DA (dark mode, palette, typo)
-- [ ] Sebastian répond de manière cohérente et personnalisée
-- [ ] Mobile-first responsive
-- [ ] Démo-ready
+| Critère | Pts | Couverture | Epic(s) |
+|---------|-----|-----------|---------|
+| Architecture Backend | 2 | ✅ Modules, couches, patterns, enums, indexes | 2, 4, 5 |
+| Architecture Frontend | 2 | ✅ App Router, composants, layout groups | 1, 3 |
+| Modélisation & Persistance | 2 | ✅ Prisma, PG, enums, indexes, relations | 2 |
+| Qualité code & Maintenabilité | 2 | ✅ ESLint, Prettier, README, conventions | Hygiène |
+| Config & Déploiement | 2 | 🔧 Docker Compose local — **manque déploiement** | **Epic 9** |
+| Design System intégré | 1 | ✅ Tokens CSS, shadcn/ui, palette | 1 |
+| Fidélité design | 1 | 🔧 2 pages finies, reste à compléter | 6, 7 |
+| Responsive & Animations | 1 | 🔧 Base OK, polish nécessaire | 7 |
+| Back Office | 1 | ❌ **Pas encore fait** | **Epic 8** |
+| Mobile-First | 1 | ✅ Container 430px, BottomNav, touch | 1 |
+| Compréhension problème | 1 | ✅ Brief complet | — |
+| Proposition innovante | 1 | ✅ Empreinte, FOMO, majordome IA | — |
+| MVP fonctionnel | 1 | 🔧 Parcours incomplet | 5, 6 |
+| Qualité démo | 1 | 🔧 Dépend du parcours complet | 5, 6, 7 |
+| Pitch & Réponses | 1 | À préparer | — |

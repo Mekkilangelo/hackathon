@@ -1,0 +1,27 @@
+{
+  "name": "sebastian",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sebastian — Le Majordome Michelin",
+  "scripts": {
+    "dev:front": "cd frontend && npm run dev",
+    "dev:back": "cd backend && npm run dev",
+    "lint": "npm run lint:front && npm run lint:back",
+    "lint:front": "cd frontend && npm run lint",
+    "lint:back": "cd backend && npm run lint",
+    "test": "npm run test:back",
+    "test:back": "cd backend && npm test",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mekkilangelo/hackathon.git"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  }
+}

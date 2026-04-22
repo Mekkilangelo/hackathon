@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../shared/database/prisma";
 import { UserRepository } from "./user.repository";
 import { UserService } from "./user.service";
 import { UserController } from "./user.controller";
 
-const prisma = new PrismaClient();
 const repo = new UserRepository(prisma);
 const service = new UserService(repo);
 const ctrl = new UserController(service);

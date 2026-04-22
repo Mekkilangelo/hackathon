@@ -1,6 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, MichelinType } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+const MICHELIN_MAP: Record<string, MichelinType> = {
+  "etoile": MichelinType.ETOILE,
+  "bib-gourmand": MichelinType.BIB_GOURMAND,
+  "etoile-verte": MichelinType.ETOILE_VERTE,
+};
 
 const restaurants = [
   // ── Étoile Michelin ──────────────────────────────────────────────────────────
@@ -390,7 +396,12 @@ async function main() {
   await prisma.restaurant.deleteMany();
 
   for (const data of restaurants) {
-    await prisma.restaurant.create({ data });
+    await prisma.restaurant.create({
+      data: {
+        ...data,
+        michelinType: MICHELIN_MAP[data.michelinType] ?? MichelinType.BIB_GOURMAND,
+      },
+    });
   }
 
   console.log(`✅ ${restaurants.length} restaurants inserted.`);

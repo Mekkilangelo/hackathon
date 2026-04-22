@@ -1,0 +1,8 @@
+{
+  "frontend/**/*.{ts,tsx}": [
+    "eslint --fix --no-warn-ignored"
+  ],
+  "backend/src/**/*.ts": [
+    "eslint --fix --no-warn-ignored"
+  ]
+}

@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { MichelinType } from "@prisma/client";
 
 export const RestaurantFiltersSchema = z.object({
   cuisine: z.string().optional(),
   budget: z.coerce.number().int().min(1).max(3).optional(),
   zone: z.string().optional(),
   tags: z.string().optional(),
-  michelinType: z.enum(["etoile", "bib-gourmand", "etoile-verte"]).optional(),
+  michelinType: z.nativeEnum(MichelinType).optional(),
 });
 
 export type RestaurantFilters = z.infer<typeof RestaurantFiltersSchema>;
@@ -15,7 +16,7 @@ export interface RestaurantCardDTO {
   name: string;
   cuisine: string;
   priceRange: number;
-  michelinType: string;
+  michelinType: MichelinType;
   imageUrl: string;
   matchScore: number;
   tags: string[];

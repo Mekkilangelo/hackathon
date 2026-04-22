@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
 }
 
 datasource db {
@@ -7,17 +8,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum MichelinType {
+  ETOILE
+  BIB_GOURMAND
+  ETOILE_VERTE
+}
+
+enum ChatRole {
+  USER
+  SEBASTIAN
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
 model User {
-  id           String       @id @default(uuid())
+  id           String        @id @default(uuid())
   name         String
-  createdAt    DateTime     @default(now())
+  createdAt    DateTime      @default(now()) @map("created_at")
   profile      UserProfile?
   chatSessions ChatSession[]
+
+  @@map("users")
 }
 
 model UserProfile {
   id        String   @id @default(uuid())
-  userId    String   @unique
+  userId    String   @unique @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   diet      String[]
   budget    Int
@@ -25,40 +43,54 @@ model UserProfile {
   occasions String[]
   cuisines  String[]
   zone      String?
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user_profiles")
 }
 
 model Restaurant {
-  id           String   @id @default(uuid())
+  id           String       @id @default(uuid())
   name         String
   cuisine      String
-  priceRange   Int
-  michelinType String
+  priceRange   Int          @map("price_range")
+  michelinType MichelinType @map("michelin_type")
   address      String
   zone         String
   description  String
   ambiance     String
-  imageUrl     String
+  imageUrl     String       @map("image_url")
   gallery      String[]
   hours        Json
   tags         String[]
-  createdAt    DateTime @default(now())
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  @@index([cuisine])
+  @@index([zone])
+  @@index([michelinType])
+  @@index([priceRange])
+  @@map("restaurants")
 }
 
 model ChatSession {
   id        String        @id @default(uuid())
-  userId    String
+  userId    String        @map("user_id")
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages  ChatMessage[]
-  createdAt DateTime      @default(now())
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("chat_sessions")
 }
 
 model ChatMessage {
   id        String      @id @default(uuid())
-  sessionId String
+  sessionId String      @map("session_id")
   session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  role      String
+  role      ChatRole
   content   String
   metadata  Json?
-  createdAt DateTime    @default(now())
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@map("chat_messages")
 }
