@@ -47,7 +47,7 @@
 ---
 
 ## Epic 2 : Setup Backend + DB ✅
-**Statut : Terminé**
+**Statut : Terminé (avec correctifs v2)**
 
 - [x] Init Express + TypeScript (structure modulaire)
 - [x] Setup Prisma + PostgreSQL + Docker Compose
@@ -56,7 +56,7 @@
 - [x] Shared middleware (error handler, validation Zod)
 - [x] Singleton PrismaClient (`shared/database/prisma.ts`)
 
-### Correctifs appliqués
+### Correctifs v1 (appliqués)
 - [x] Enums Prisma (`MichelinType`, `ChatRole`) au lieu de strings
 - [x] Indexes sur les colonnes filtrées (cuisine, zone, michelinType, priceRange, userId, sessionId)
 - [x] `@@map()` pour convention snake_case en DB
@@ -64,15 +64,129 @@
 - [x] `.env` retiré du git, `.env.example` complété (LLM_API_KEY, LLM_MODEL)
 - [x] Config serveur étendue (config LLM)
 
+### Correctifs v2 — Auth + Champs Restaurant (appliqués)
+
+#### Modèle `User` — authentification
+- [x] `email String? @unique` — permet l'identification sans casser l'onboarding actuel (nullable)
+- [x] `passwordHash String?` — préparation auth JWT (nullable pour MVP qui garde le flow prénom-only)
+
+> **Stratégie auth MVP :** L'onboarding actuel (prénom → localStorage UUID) reste intact.
+> `email` + `passwordHash` sont nullable pour ne pas bloquer. L'Epic 8 (back office) utilisera
+> un `ADMIN_TOKEN` env var. Une auth complète (JWT login/register) est post-hackathon.
+
+#### Modèle `Restaurant` — champs manquants
+- [x] `michelinStars Int?` — nombre d'étoiles (1, 2, 3) distinct du type Michelin
+  - Étoile : 1–3 étoiles selon le restaurant
+  - Bib Gourmand / Étoile Verte : `null` (pas d'étoile gastronomique)
+- [x] `phone String?` — numéro de téléphone pour la fiche restaurant
+- [x] `reservationUrl String?` — lien TheFork / site propre pour le CTA "Réserver"
+
+#### Seed mis à jour
+- [x] `michelinStars` ajouté pour les 6 restaurants étoilés :
+  - Le Grand Véfour : 2 ⭐⭐
+  - Septime : 1 ⭐
+  - Frenchie : 1 ⭐
+  - Le Clarence : 2 ⭐⭐
+  - Kei : 3 ⭐⭐⭐
+  - Sushi B : 1 ⭐
+
+#### Migration
+- [x] `migrations/20260422000000_add_auth_restaurant_fields/migration.sql` créée
+- [ ] À appliquer : `npx prisma migrate dev` ou `npx prisma db push` en dev
+
+> ⚠️ **Note migration :** Si le schéma et la DB sont désynchronisés (tables PascalCase vs snake_case
+> suite à l'ajout des `@@map()` post-init), faire un reset propre en dev :
+> `npx prisma migrate reset --force` puis `npx prisma db seed`
+
 ---
 
-## Epic 3 : Onboarding Quiz ✅
-**Statut : Terminé**
+## Epic 3 : Onboarding Quiz IA — Sebastian en personne ✅
+**Statut : Refondu et terminé**
 
-- [x] Composants Quiz (QuizStep, QuizProgress, QuizOption)
-- [x] Flux 7 étapes
-- [x] Intégration API (POST /users + POST /profile)
-- [x] localStorage userId
+### Ancien quiz (abandonné)
+Le formulaire statique en 7 étapes a été remplacé. Il n'avait aucune personnalité, aucun lien avec la DA du majordome, et ressemblait à un formulaire RH.
+
+### Nouvelle approche : conversation LLM avec Sebastian
+
+L'onboarding est désormais une **vraie conversation** : Sebastian pose des questions naturelles, rebondit sur les réponses de l'utilisateur, et extrait silencieusement le profil gastronomique au fil des échanges.
+
+#### Architecture LLM modulaire (partagée avec Epic 5)
+
+```
+src/shared/llm/
+├── llm.interface.ts              ← ILLMService (contrat commun)
+├── llm.factory.ts                ← Factory : lit LLM_PROVIDER, instancie le bon service
+├── llm-cache.proxy.ts            ← Proxy cache SHA-256, TTL 1h (Proxy Pattern)
+└── providers/
+    ├── groq.service.ts           ← Groq (llama-3.3-70b-versatile) ← ACTIF
+    ├── openai.service.ts         ← OpenAI (gpt-4o-mini / gpt-4o)
+    └── gemini.service.ts         ← Gemini (gemini-1.5-flash / pro)
+```
+
+**Changer de provider** = une seule variable d'env :
+```
+LLM_PROVIDER=groq    # → Groq (clé Groq)
+LLM_PROVIDER=openai  # → OpenAI (clé OpenAI)
+LLM_PROVIDER=gemini  # → Gemini (clé Google AI Studio)
+```
+
+#### Module Onboarding (backend)
+
+```
+src/modules/onboarding/
+├── onboarding.dto.ts             ← OnboardingChatDTO, ExtractedProfile, Response
+├── onboarding.service.ts         ← Orchestration : prompt + LLM + parsing JSON
+├── onboarding.controller.ts      ← POST /api/onboarding/chat
+├── onboarding.routes.ts          ← Wiring
+└── prompts/
+    └── sebastian-onboarding.prompt.ts  ← System prompt complet (voix, règles, extraction)
+```
+
+**Endpoint :** `POST /api/onboarding/chat`
+- Body : `{ messages: [{role, content}][] }` — stateless, historique envoyé côté client
+- Réponse : `{ reply: string, done: false }` ou `{ reply: string, done: true, profile: {...} }`
+
+**Flow d'extraction :** quand Sebastian a collecté toutes les infos (~6-8 turns), il émet un bloc `<PROFIL_COMPLET>{...json...}</PROFIL_COMPLET>`. Le service parse ce bloc, le retire du message visible, et retourne `done: true`.
+
+#### Prompt Sebastian (voix du majordome)
+- Vouvoiement élégant, ton sobre et raffiné
+- UNE seule question par message
+- Collecte dans l'ordre : prénom → occasion → régime → budget → ambiance → cuisine → quartier
+- Ne mentionne jamais qu'il collecte des données
+- Valeurs JSON strictement contraintes (enums compatibles avec le profil DB)
+
+#### Frontend — page `/onboarding` (refonte)
+- Interface **chat** (plus de formulaire à étapes)
+- Sebastian envoie le premier message au chargement (appel API)
+- Indicateur de frappe animé (3 points dorés)
+- Progression discrète (7 points en en-tête)
+- À `done: true` : création user + profil → redirect `/chat`
+- Gestion d'erreur gracieuse
+
+#### Checklist
+- [x] `shared/llm/llm.interface.ts`
+- [x] `shared/llm/providers/groq.service.ts`
+- [x] `shared/llm/providers/openai.service.ts` (stub prêt)
+- [x] `shared/llm/providers/gemini.service.ts` (stub prêt)
+- [x] `shared/llm/llm-cache.proxy.ts`
+- [x] `shared/llm/llm.factory.ts`
+- [x] `modules/onboarding/prompts/sebastian-onboarding.prompt.ts`
+- [x] `modules/onboarding/onboarding.dto.ts`
+- [x] `modules/onboarding/onboarding.service.ts`
+- [x] `modules/onboarding/onboarding.controller.ts`
+- [x] `modules/onboarding/onboarding.routes.ts`
+- [x] `src/router.ts` — route `/onboarding` branchée
+- [x] `config/index.ts` — `llm.provider` ajouté
+- [x] `.env.example` mis à jour (LLM_PROVIDER, LLM_API_KEY, LLM_MODEL avec commentaires)
+- [x] `frontend/lib/api.ts` — `onboardingApi.chat()` ajouté
+- [x] `frontend/app/onboarding/page.tsx` — refonte chat
+
+#### Config nécessaire dans `.env`
+```env
+LLM_PROVIDER=groq
+LLM_API_KEY=gsk_xxxxxxxxxxxx   # clé Groq
+LLM_MODEL=llama-3.3-70b-versatile
+```
 
 ---
 

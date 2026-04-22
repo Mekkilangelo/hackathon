@@ -10,7 +10,7 @@ export const UserProfileSchema = z.object({
   vibes: z.array(z.string()).default([]),
   occasions: z.array(z.string()).default([]),
   cuisines: z.array(z.string()).default([]),
-  zone: z.string().optional(),
+  city: z.string().optional(),
 });
 
 export type CreateUserDTO = z.infer<typeof CreateUserSchema>;

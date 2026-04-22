@@ -19,7 +19,7 @@ export interface UserProfileDTO {
   vibes: string[];
   occasions: string[];
   cuisines: string[];
-  zone?: string;
+  city?: string;
 }
 
 export interface RestaurantCardDTO {
@@ -132,6 +132,51 @@ export const chatApi = {
 
   getMessages: (sessionId: string) =>
     request<ChatMessageDTO[]>(`/chat/sessions/${sessionId}/messages`),
+};
+
+// ─── Onboarding (Quiz QCM généré par LLM) ─────────────────────────────────────
+
+export interface QcmAnswer {
+  axis: string;
+  question: string;
+  answer: string | string[];
+}
+
+export interface QcmOption {
+  label: string;
+  value: string;
+  emoji?: string;
+}
+
+export type OnboardingNextResponse =
+  | {
+      done: false;
+      axis: string;
+      question: string;
+      subtitle?: string;
+      type: "single" | "multiple" | "text";
+      options?: QcmOption[];
+    }
+  | {
+      done: true;
+      message: string;
+      profile: {
+        name: string;
+        city: string;
+        diet: string[];
+        budget: number;
+        vibes: string[];
+        occasions: string[];
+        cuisines: string[];
+      };
+    };
+
+export const onboardingApi = {
+  next: (answers: QcmAnswer[]) =>
+    request<OnboardingNextResponse>("/onboarding/next", {
+      method: "POST",
+      body: JSON.stringify({ answers }),
+    }),
 };
 
 // ─── Recommendations ──────────────────────────────────────────────────────────

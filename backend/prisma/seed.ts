@@ -62,10 +62,16 @@ function mapAward(award: string, greenStar: boolean): MichelinType {
   return MichelinType.SELECTION;
 }
 
+function mapStars(award: string): number | null {
+  if (award === "3 Stars") return 3;
+  if (award === "2 Stars") return 2;
+  if (award === "1 Star") return 1;
+  return null;
+}
+
 function mapPrice(price: string): number {
   const count = (price.match(/€/g) || []).length;
   if (count >= 1 && count <= 4) return count;
-  // handle $$$$ style (USA)
   const dcount = (price.match(/\$/g) || []).length;
   if (dcount >= 1 && dcount <= 4) return dcount;
   return 2;
@@ -137,6 +143,7 @@ interface RestaurantInput {
   cuisine: string;
   priceRange: number;
   michelinType: MichelinType;
+  michelinStars: number | null;
   greenStar: boolean;
   address: string;
   location: string;
@@ -184,6 +191,7 @@ async function main() {
       cuisine: normalizeCuisine(cuisine),
       priceRange: mapPrice(price),
       michelinType,
+      michelinStars: mapStars(award),
       greenStar,
       address: address.trim(),
       location: location.trim(),
