@@ -20,7 +20,7 @@
         "ritwickdey.LiveServer"
       ],
       "settings": {
-        "files.eol": "\n",
+        "files.eol": "auto",
         "editor.bracketPairColorization.enabled": true,
         "editor.guides.bracketPairs": true,
         "editor.formatOnSave": true,
