@@ -29,10 +29,13 @@ export class RestaurantService {
       cuisine: r.cuisine,
       priceRange: r.priceRange,
       michelinType: r.michelinType,
+      greenStar: r.greenStar,
       imageUrl: r.imageUrl,
       matchScore,
       tags: r.tags,
       zone: r.zone,
+      location: r.location,
+      country: r.country,
       ambiance: r.ambiance,
     };
   }
@@ -42,8 +45,12 @@ export class RestaurantService {
       ...this.toCardDTO(r),
       description: r.description,
       address: r.address,
-      hours: r.hours as Record<string, string>,
+      latitude: r.latitude,
+      longitude: r.longitude,
+      hours: r.hours as Record<string, string> | null,
       gallery: r.gallery,
+      websiteUrl: r.websiteUrl,
+      michelinUrl: r.michelinUrl,
     };
   }
 }
