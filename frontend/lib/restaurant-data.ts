@@ -1,4 +1,5 @@
 import {
+  recommendationsApi,
   restaurantsApi,
   type MichelinTypeDTO,
   type RestaurantCardDTO,
@@ -260,6 +261,20 @@ function normalizeCard(restaurant: RestaurantCardDTO): RestaurantCardDisplay {
   };
 }
 
+function hashSeed(seed: string): number {
+  return seed.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+}
+
+function pickMockRestaurant(seed?: string): MockRestaurant {
+  if (mockRestaurants.length === 1) {
+    return mockRestaurants[0];
+  }
+
+  const daySeed = new Date().toISOString().slice(0, 10);
+  const index = Math.abs(hashSeed(`${seed ?? "surprise"}-${daySeed}`)) % mockRestaurants.length;
+  return mockRestaurants[index];
+}
+
 function normalizeDetail(restaurant: RestaurantDetailDTO): RestaurantDetailDisplay {
   return {
     ...restaurant,
@@ -371,6 +386,25 @@ export async function getEpicSixRecommendations(
   return {
     intro: buildIntro(context),
     restaurants,
+  };
+}
+
+export async function getSurpriseRestaurant(userId?: string): Promise<RestaurantCardDisplay> {
+  if (userId) {
+    try {
+      const restaurant = await recommendationsApi.surprise(userId);
+      return normalizeCard(restaurant);
+    } catch {
+      // Fallback mock tant que l'Epic 5 n'est pas branchée.
+    }
+  }
+
+  const restaurant = pickMockRestaurant(userId);
+  return {
+    ...toCardDisplay(restaurant),
+    matchScore: 96,
+    recommendationReason:
+      "Ce soir, je te propose une table qui change le rythme habituel sans perdre en tenue.",
   };
 }
 
