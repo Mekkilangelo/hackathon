@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3001:3001'
+      - '3000:3000'
+    volumes:
+      - .:/workspace:cached
+      - dev_node_modules:/workspace/node_modules
+    # env_file:
+    #   - .env
+    depends_on:
+      - postgres
+      - ollama
+    command: /bin/sh -c "while sleep 1000; do :; done"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sebastian_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sebastian
+      POSTGRES_PASSWORD: sebastian
+      POSTGRES_DB: sebastian_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - dev_ollama_data:/root/.ollama
+
+volumes:
+  dev_node_modules:
+  dev_postgres_data:
+  dev_ollama_data:
