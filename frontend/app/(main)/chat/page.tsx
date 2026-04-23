@@ -77,7 +77,8 @@ export default function ChatPage() {
         scrollToBottom();
       } catch {
         localStorage.removeItem("sebastianSessionId");
-        window.location.reload();
+        localStorage.removeItem("sebastianUserId");
+        router.push("/onboarding");
       } finally {
         setLoading(false);
       }

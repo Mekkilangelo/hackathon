@@ -20,6 +20,7 @@ COPY --from=builder /app/dist           ./dist
 COPY --from=builder /app/node_modules   ./node_modules
 COPY --from=builder /app/prisma         ./prisma
 COPY --from=builder /app/package.json   ./
+COPY --from=builder /app/tsconfig.json  ./
 # CSV pour le seed (optionnel)
 COPY --from=builder /app/michelin_my_maps.csv ./michelin_my_maps.csv
 
