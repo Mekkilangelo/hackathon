@@ -19,11 +19,17 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const id = localStorage.getItem("sebastianUserId");
-    if (!id) { router.replace("/onboarding"); return; }
+    if (!id) {
+      router.replace("/onboarding");
+      return;
+    }
 
-    usersApi.getById(id)
+    usersApi
+      .getById(id)
       .then(setUser)
-      .catch(() => {/* afficher état vide */})
+      .catch(() => {
+        /* afficher état vide */
+      })
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -63,7 +69,10 @@ export default function ProfilePage() {
       <div className="flex items-center gap-3">
         <SebastianLogo size={40} />
         <div>
-          <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "var(--font-display)" }}>
+          <h1
+            className="text-xl font-bold text-foreground"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             {user.name}
           </h1>
           <p className="text-xs text-muted-foreground">Empreinte gastronomique personnelle</p>
@@ -73,11 +82,16 @@ export default function ProfilePage() {
       {/* Profil */}
       {profile ? (
         <div className="flex flex-col gap-3">
-          <ProfileSection label="Budget" value={BUDGET_LABEL[profile.budget] ?? `Niveau ${profile.budget}`} />
+          <ProfileSection
+            label="Budget"
+            value={BUDGET_LABEL[profile.budget] ?? `Niveau ${profile.budget}`}
+          />
           <ProfileSection label="Cuisines favorites" tags={profile.cuisines} />
           <ProfileSection label="Ambiances" tags={profile.vibes} />
           <ProfileSection label="Occasions" tags={profile.occasions} />
-          {profile.diet.length > 0 && <ProfileSection label="Régime alimentaire" tags={profile.diet} />}
+          {profile.diet.length > 0 && (
+            <ProfileSection label="Régime alimentaire" tags={profile.diet} />
+          )}
           {profile.city && <ProfileSection label="Ville" value={profile.city} />}
         </div>
       ) : (
@@ -119,8 +133,13 @@ function ProfileSection({
   tags?: string[];
 }) {
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl p-3 border border-border" style={{ background: "var(--card)" }}>
-      <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">{label}</p>
+    <div
+      className="flex flex-col gap-1.5 rounded-xl p-3 border border-border"
+      style={{ background: "var(--card)" }}
+    >
+      <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground">
+        {label}
+      </p>
       {value && <p className="text-sm text-foreground">{value}</p>}
       {tags && tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -135,7 +154,9 @@ function ProfileSection({
           ))}
         </div>
       )}
-      {tags && tags.length === 0 && <p className="text-sm text-muted-foreground italic">Non précisé</p>}
+      {tags && tags.length === 0 && (
+        <p className="text-sm text-muted-foreground italic">Non précisé</p>
+      )}
     </div>
   );
 }

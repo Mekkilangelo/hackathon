@@ -31,11 +31,7 @@ export default function RestaurantCard({ restaurant: r }: Props) {
         {/* Image */}
         {r.imageUrl ? (
           <div className="h-36 w-full overflow-hidden">
-            <img
-              src={r.imageUrl}
-              alt={r.name}
-              className="w-full h-full object-cover"
-            />
+            <img src={r.imageUrl} alt={r.name} className="w-full h-full object-cover" />
           </div>
         ) : (
           <div
@@ -50,9 +46,7 @@ export default function RestaurantCard({ restaurant: r }: Props) {
         <div className="p-3 flex flex-col gap-1.5">
           {/* Nom + badge Michelin */}
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-sm text-foreground leading-tight flex-1">
-              {r.name}
-            </h3>
+            <h3 className="font-semibold text-sm text-foreground leading-tight flex-1">{r.name}</h3>
             <span
               className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap"
               style={{ background: badge.color + "22", color: badge.color }}

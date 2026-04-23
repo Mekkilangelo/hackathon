@@ -25,11 +25,7 @@ function ResultsContent() {
       <div className="flex flex-col flex-1 items-center justify-center gap-4 text-center py-12">
         <SebastianLogo size={48} />
         <p className="text-sm text-muted-foreground">Aucune sélection disponible.</p>
-        <Link
-          href="/chat"
-          className="text-sm font-medium underline"
-          style={{ color: "var(--or)" }}
-        >
+        <Link href="/chat" className="text-sm font-medium underline" style={{ color: "var(--or)" }}>
           Parler à Sebastian
         </Link>
       </div>
@@ -64,10 +60,7 @@ function ResultsContent() {
       </div>
 
       {/* Lien retour */}
-      <Link
-        href="/chat"
-        className="text-sm text-center text-muted-foreground underline"
-      >
+      <Link href="/chat" className="text-sm text-center text-muted-foreground underline">
         Affiner avec Sebastian →
       </Link>
     </div>

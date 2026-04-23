@@ -2,6 +2,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type MichelinTypeDTO =
+  | "ETOILE"
+  | "BIB_GOURMAND"
+  | "ETOILE_VERTE"
+  | "etoile"
+  | "bib-gourmand"
+  | "etoile-verte";
+
 export interface UserDTO {
   id: string;
   name: string;
@@ -158,26 +166,26 @@ export interface QcmOption {
 
 export type OnboardingNextResponse =
   | {
-      done: false;
-      axis: string;
-      question: string;
-      subtitle?: string;
-      type: "single" | "multiple" | "text";
-      options?: QcmOption[];
-    }
+    done: false;
+    axis: string;
+    question: string;
+    subtitle?: string;
+    type: "single" | "multiple" | "text";
+    options?: QcmOption[];
+  }
   | {
-      done: true;
-      message: string;
-      profile: {
-        name: string;
-        city: string;
-        diet: string[];
-        budget: number;
-        vibes: string[];
-        occasions: string[];
-        cuisines: string[];
-      };
+    done: true;
+    message: string;
+    profile: {
+      name: string;
+      city: string;
+      diet: string[];
+      budget: number;
+      vibes: string[];
+      occasions: string[];
+      cuisines: string[];
     };
+  };
 
 export const onboardingApi = {
   next: (answers: QcmAnswer[]) =>

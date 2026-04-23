@@ -16,8 +16,13 @@ const MICHELIN_BADGE: Record<string, { label: string; color: string }> = {
 const PRICE: Record<number, string> = { 1: "€", 2: "€€", 3: "€€€", 4: "€€€€" };
 
 const DAY_FR: Record<string, string> = {
-  monday: "Lundi", tuesday: "Mardi", wednesday: "Mercredi",
-  thursday: "Jeudi", friday: "Vendredi", saturday: "Samedi", sunday: "Dimanche",
+  monday: "Lundi",
+  tuesday: "Mardi",
+  wednesday: "Mercredi",
+  thursday: "Jeudi",
+  friday: "Vendredi",
+  saturday: "Samedi",
+  sunday: "Dimanche",
 };
 
 export default function RestaurantPage() {
@@ -28,7 +33,8 @@ export default function RestaurantPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    restaurantsApi.getById(id)
+    restaurantsApi
+      .getById(id)
       .then(setRestaurant)
       .catch(() => setError("Restaurant introuvable."))
       .finally(() => setLoading(false));
@@ -49,7 +55,11 @@ export default function RestaurantPage() {
     return (
       <div className="flex flex-col flex-1 items-center justify-center gap-4 text-center py-12">
         <p className="text-sm text-muted-foreground">{error || "Restaurant introuvable."}</p>
-        <button onClick={() => router.back()} className="text-sm underline" style={{ color: "var(--or)" }}>
+        <button
+          onClick={() => router.back()}
+          className="text-sm underline"
+          style={{ color: "var(--or)" }}
+        >
           ← Retour
         </button>
       </div>
@@ -178,7 +188,9 @@ export default function RestaurantPage() {
         {/* Horaires */}
         {restaurant.hours && Object.keys(restaurant.hours).length > 0 && (
           <div className="flex flex-col gap-1">
-            <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">Horaires</p>
+            <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+              Horaires
+            </p>
             <div
               className="rounded-xl overflow-hidden border border-border"
               style={{ background: "var(--card)" }}
@@ -215,7 +227,11 @@ export default function RestaurantPage() {
             <button
               disabled
               className="flex items-center justify-center h-13 rounded-xl font-semibold text-sm opacity-40 cursor-not-allowed"
-              style={{ background: "var(--muted)", color: "var(--muted-foreground)", height: "52px" }}
+              style={{
+                background: "var(--muted)",
+                color: "var(--muted-foreground)",
+                height: "52px",
+              }}
             >
               Réservation non disponible
             </button>
@@ -234,10 +250,7 @@ export default function RestaurantPage() {
         </div>
 
         {/* Lien retour chat */}
-        <Link
-          href="/chat"
-          className="text-xs text-center text-muted-foreground underline pb-2"
-        >
+        <Link href="/chat" className="text-xs text-center text-muted-foreground underline pb-2">
           ← Retour à Sebastian
         </Link>
       </div>

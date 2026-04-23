@@ -136,7 +136,7 @@ function SurprendsMoiButton({ userId }: { userId: string }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId }),
-        }
+        },
       );
       if (res.ok) {
         const data = await res.json();
