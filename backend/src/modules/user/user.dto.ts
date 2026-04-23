@@ -6,7 +6,7 @@ export const CreateUserSchema = z.object({
 
 export const UserProfileSchema = z.object({
   diet: z.array(z.string()).default([]),
-  budget: z.number().int().min(1).max(3),
+  budget: z.coerce.number().int().min(1).max(4),
   vibes: z.array(z.string()).default([]),
   occasions: z.array(z.string()).default([]),
   cuisines: z.array(z.string()).default([]),

@@ -1,3 +1,6 @@
+# Compose minimal pour le développement local (DB uniquement)
+# Pour lancer l'app complète : docker-compose.yml à la racine du projet
+
 services:
   postgres:
     image: postgres:16-alpine

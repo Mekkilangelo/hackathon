@@ -43,11 +43,10 @@ export default function OnboardingPage() {
       const res = await onboardingApi.next(history);
 
       if (res.done) {
-        setFinishing(true);
         const user = await usersApi.create({ name: res.profile.name });
         await usersApi.createProfile(user.id, {
           diet: res.profile.diet,
-          budget: res.profile.budget,
+          budget: Number(res.profile.budget),
           vibes: res.profile.vibes,
           occasions: res.profile.occasions,
           cuisines: res.profile.cuisines,
@@ -55,7 +54,8 @@ export default function OnboardingPage() {
         });
         localStorage.setItem("sebastianUserId", user.id);
         localStorage.setItem("sebastianUserName", res.profile.name);
-        setTimeout(() => router.push("/chat"), 1600);
+        setFinishing(true);
+        setTimeout(() => router.push("/chat"), 1200);
       } else {
         setCurrent(res);
       }
@@ -166,12 +166,13 @@ export default function OnboardingPage() {
                     key={opt.value}
                     label={opt.label}
                     emoji={opt.emoji}
-                    selected={selected.includes(opt.value)}
+                    selected={selected.includes(String(opt.value))}
                     onClick={() => {
+                      const v = String(opt.value);
                       if (current.type === "single") {
-                        setSelected([opt.value]);
+                        setSelected([v]);
                       } else {
-                        toggle(opt.value);
+                        toggle(v);
                       }
                     }}
                     disabled={loading}

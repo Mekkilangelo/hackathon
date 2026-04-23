@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   title: "Sebastian — Le Majordome Michelin",
   description: "Ton majordome gastronomique personnel. Découvre les meilleures tables selon ton empreinte gustative.",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Sebastian",
+  },
+  icons: {
+    apple: "/icons/icon-192",
+  },
 };
 
 export const viewport: Viewport = {

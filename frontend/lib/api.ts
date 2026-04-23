@@ -20,6 +20,7 @@ export interface UserProfileDTO {
   occasions: string[];
   cuisines: string[];
   city?: string;
+  zone?: string;
 }
 
 export interface RestaurantCardDTO {

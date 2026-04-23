@@ -15,6 +15,13 @@ export default function Header() {
               Sebastian
             </span>
           </Link>
+          <Link
+            href="/admin"
+            className="text-[10px] font-semibold px-2.5 py-1 rounded-full tracking-wider uppercase"
+            style={{ background: "var(--marine)", color: "var(--muted-foreground)", border: "1px solid var(--border)" }}
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </header>

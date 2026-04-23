@@ -1,0 +1,17 @@
+import { Router } from "express";
+import { prisma } from "../../shared/database/prisma";
+import { UserRepository } from "../user/user.repository";
+import { RestaurantRepository } from "../restaurant/restaurant.repository";
+import { RecommendationService } from "./recommendation.service";
+import { RecommendationController } from "./recommendation.controller";
+
+const userRepo = new UserRepository(prisma);
+const restaurantRepo = new RestaurantRepository(prisma);
+const service = new RecommendationService(userRepo, restaurantRepo);
+const ctrl = new RecommendationController(service);
+
+const router = Router();
+
+router.post("/surprise", ctrl.surprise);
+
+export default router;

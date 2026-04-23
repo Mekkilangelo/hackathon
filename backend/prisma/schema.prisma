@@ -25,15 +25,45 @@ enum ChatRole {
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
-  id           String        @id @default(uuid())
-  name         String
-  email        String?       @unique
-  passwordHash String?       @map("password_hash")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  profile      UserProfile?
-  chatSessions ChatSession[]
+  id                String             @id @default(uuid())
+  name              String
+  email             String?            @unique
+  passwordHash      String?            @map("password_hash")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  profile           UserProfile?
+  chatSessions      ChatSession[]
+  events            UserEvent[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+model UserEvent {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  date        DateTime
+  isRecurring Boolean  @default(false) @map("is_recurring")
+  type        String
+  emoji       String   @default("🎉")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("user_events")
 }
 
 model UserProfile {

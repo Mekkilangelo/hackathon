@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   {
-    href: "/",
-    label: "Accueil",
-    icon: HomeIcon,
+    href: "/results",
+    label: "Sélection",
+    icon: ListIcon,
   },
   {
     href: "/chat",
-    label: "Chat",
+    label: "Sebastian",
     icon: ChatIcon,
   },
   {
@@ -29,7 +29,7 @@ export default function BottomNav() {
       <div className="container-app">
         <div className="flex items-center justify-around bg-card border-t border-border h-16 px-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || (href !== "/" && pathname.startsWith(href));
+            const active = pathname === href || pathname.startsWith(href + "/");
             return (
               <Link
                 key={href}
@@ -51,17 +51,12 @@ export default function BottomNav() {
   );
 }
 
-function HomeIcon({ active }: { active: boolean }) {
+function ListIcon({ active }: { active: boolean }) {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-        stroke="currentColor"
-        strokeWidth={active ? 2 : 1.5}
-        fill={active ? "currentColor" : "none"}
-        fillOpacity={active ? 0.15 : 0}
-      />
-      <path d="M7.5 18V13h5v5" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" />
+      <rect x="3" y="4" width="14" height="2" rx="1" fill="currentColor" opacity={active ? 1 : 0.6} />
+      <rect x="3" y="9" width="14" height="2" rx="1" fill="currentColor" opacity={active ? 1 : 0.6} />
+      <rect x="3" y="14" width="9" height="2" rx="1" fill="currentColor" opacity={active ? 1 : 0.6} />
     </svg>
   );
 }

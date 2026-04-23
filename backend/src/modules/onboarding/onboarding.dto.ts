@@ -2,10 +2,12 @@ import { z } from "zod";
 
 // ─── Request ──────────────────────────────────────────────────────────────────
 
+const answerValue = z.union([z.string(), z.number().transform(String)]);
+
 export const QcmAnswerSchema = z.object({
   axis: z.string(),
   question: z.string(),
-  answer: z.union([z.string(), z.array(z.string())]),
+  answer: z.union([answerValue, z.array(answerValue)]),
 });
 
 export const OnboardingNextSchema = z.object({

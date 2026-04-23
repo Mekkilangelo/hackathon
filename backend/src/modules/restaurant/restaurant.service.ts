@@ -43,6 +43,7 @@ export class RestaurantService {
   private toDetailDTO(r: Restaurant): RestaurantDetailDTO {
     return {
       ...this.toCardDTO(r),
+      michelinStars: r.michelinStars,
       description: r.description,
       address: r.address,
       latitude: r.latitude,

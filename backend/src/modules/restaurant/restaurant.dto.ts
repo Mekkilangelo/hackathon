@@ -9,7 +9,7 @@ export const RestaurantFiltersSchema = z.object({
   country: z.string().optional(),
   tags: z.string().optional(),
   michelinType: z.nativeEnum(MichelinType).optional(),
-  greenStar: z.coerce.boolean().optional(),
+  greenStar: z.string().transform(s => s !== "false" && s !== "0").optional(),
   search: z.string().optional(),
 });
 
@@ -32,6 +32,7 @@ export interface RestaurantCardDTO {
 }
 
 export interface RestaurantDetailDTO extends RestaurantCardDTO {
+  michelinStars: number | null;
   description: string;
   address: string;
   latitude: number | null;
