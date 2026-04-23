@@ -8,6 +8,7 @@ export const RestaurantFiltersSchema = z.object({
   zone: z.string().optional(),
   location: z.string().optional(),
   country: z.string().optional(),
+  ambiance: z.string().optional(),
   tags: z.string().optional(),
   michelinType: z.nativeEnum(MichelinType).optional(),
   greenStar: z.string().transform(s => s !== "false" && s !== "0").optional(),

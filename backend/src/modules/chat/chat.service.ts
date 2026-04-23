@@ -15,6 +15,28 @@ const CUISINE_KEYWORDS: Record<string, string> = {
   méditerranéen: "Mediterranean", méditerranéenne: "Mediterranean",
 };
 
+const VIBE_NORMALIZATION: Record<string, string> = {
+  rooftop: "terrasse",
+  "street-food": "branché",
+  brasserie: "cozy",
+};
+
+const AMBIANCE_KEYWORDS: Record<string, string> = {
+  romantique: "cozy", intime: "cozy", intimiste: "cozy",
+  terrasse: "terrasse", rooftop: "terrasse", extérieur: "terrasse",
+  "branché": "branché", tendance: "branché", hype: "branché", moderne: "branché",
+  gastro: "gastro", gastronomique: "gastro",
+  brasserie: "cozy", classique: "cozy",
+};
+
+export function extractAmbianceFromMessage(message: string): string | undefined {
+  const lower = message.toLowerCase();
+  for (const [keyword, ambiance] of Object.entries(AMBIANCE_KEYWORDS)) {
+    if (lower.includes(keyword)) return ambiance;
+  }
+  return undefined;
+}
+
 const NON_LOCATIONS = new Set([
   "manger", "dîner", "déjeuner", "restaurant", "table", "moi", "toi", "vous",
   "lui", "elle", "nous", "eux", "soir", "midi", "coin", "moment", "france",
@@ -39,11 +61,9 @@ export function extractLocationFromMessage(message: string): string | undefined 
 
 export function extractBudgetFromMessage(message: string): number | undefined {
   const lower = message.toLowerCase();
-  // Signaux budget élevé
   if (/cher|luxe|luxueux|gastronomique|haute\s+gastronomie|haut\s+de\s+gamme|étoilé|grande\s+table|grand\s+restaurant|prestige|exceptionnel/.test(lower)) {
     return 3;
   }
-  // Signaux budget bas
   if (/pas\s+trop?\s+cher|abordable|économique|petit\s+budget|raisonnable|pas\s+cher|bon\s+march[ée]|accessible|sympa|simple/.test(lower)) {
     return 1;
   }
@@ -60,13 +80,13 @@ export function extractMichelinFilter(message: string): string | undefined {
 
 export function extractIntentFromHistory(
   messages: Array<{ role: string; content: string }>
-): { budget?: number; cuisine?: string; location?: string; michelinType?: string } {
-  // Scan les 4 derniers messages user du plus ancien au plus récent (le plus récent gagne)
+): { budget?: number; cuisine?: string; location?: string; michelinType?: string; ambiance?: string } {
   const userMsgs = messages.filter((m) => m.role === "USER").slice(-4);
   let budget: number | undefined;
   let cuisine: string | undefined;
   let location: string | undefined;
   let michelinType: string | undefined;
+  let ambiance: string | undefined;
 
   for (const msg of userMsgs) {
     const b = extractBudgetFromMessage(msg.content);
@@ -77,33 +97,32 @@ export function extractIntentFromHistory(
     if (l) location = l;
     const m = extractMichelinFilter(msg.content);
     if (m) michelinType = m;
+    const a = extractAmbianceFromMessage(msg.content);
+    if (a) ambiance = a;
   }
-  return { budget, cuisine, location, michelinType };
+  return { budget, cuisine, location, michelinType, ambiance };
 }
 
 export function scoreRestaurant(r: Restaurant, profile: UserProfile | null, effectiveBudget?: number): number {
   if (!profile) return 50;
   let score = 0;
 
-  // Budget (30 pts) — priceRange 1-4, budget 1-3 (override si spécifié dans la conversation)
   const budget = effectiveBudget ?? profile.budget;
   const budgetDiff = Math.abs(r.priceRange - budget);
   score += budgetDiff === 0 ? 30 : budgetDiff === 1 ? 18 : budgetDiff === 2 ? 8 : 0;
 
-  // Cuisine (35 pts)
   const cuisineLower = r.cuisine.toLowerCase();
   const match = profile.cuisines.some((c) => cuisineLower.includes(c.toLowerCase()) || c.toLowerCase().includes(cuisineLower));
   if (match) score += 35;
 
-  // Ambiance / vibes (20 pts)
   const ambianceLower = (r.ambiance ?? "").toLowerCase();
   const tagsLower = r.tags.map((t) => t.toLowerCase());
-  const vibeMatch = profile.vibes.some(
-    (v) => ambianceLower.includes(v.toLowerCase()) || tagsLower.some((t) => t.includes(v.toLowerCase()))
+  const normalizedVibes = profile.vibes.map((v) => VIBE_NORMALIZATION[v.toLowerCase()] ?? v.toLowerCase());
+  const vibeMatch = normalizedVibes.some(
+    (v) => ambianceLower.includes(v) || tagsLower.some((t) => t.includes(v))
   );
   if (vibeMatch) score += 20;
 
-  // Michelin bonus (15 pts)
   score += r.michelinType === "ETOILE" ? 15 : r.michelinType === "BIB_GOURMAND" ? 10 : r.michelinType === "ETOILE_VERTE" ? 10 : 5;
 
   return Math.min(score, 100);
@@ -116,10 +135,11 @@ export function wantsRecommendations(message: string): boolean {
     "surprise", "étoile", "michelin", "bib", "envie", "faim", "table",
     "gastronomique", "cuisine", "japonais", "français", "italien", "indien",
     "mexicain", "asiatique", "méditerranéen", "cher", "abordable", "luxe",
+    "romantique", "intime", "intimiste", "cozy", "terrasse", "rooftop",
+    "branché", "tendance", "hype", "brasserie", "gastro",
   ];
   const lower = message.toLowerCase();
   if (triggers.some((t) => lower.includes(t))) return true;
-  // Déclenchement si seulement un lieu est mentionné (changement de ville)
   if (extractLocationFromMessage(message)) return true;
   return false;
 }
@@ -147,7 +167,6 @@ export class ChatService {
     const profile = user.profile;
     const city = profile?.city ?? "Paris";
 
-    // Historique récent → messages LLM
     const history = await this.repo.getRecentMessages(sessionId, 10);
     const historyAsc = [...history].reverse();
 
@@ -164,7 +183,6 @@ export class ChatService {
 
     const systemPrompt = buildSebastianSystemPrompt(user.name, profile, city, events, visitedNames);
 
-    // ── Requête restaurants (avant LLM pour contextualiser la réponse) ──────
     let restaurants: object[] | undefined;
     let searchNote = "";
 
@@ -173,6 +191,7 @@ export class ChatService {
       const msgLocation  = extractLocationFromMessage(userContent);
       const msgBudget    = extractBudgetFromMessage(userContent);
       const msgMichelin  = extractMichelinFilter(userContent);
+      const msgAmbiance  = extractAmbianceFromMessage(userContent);
 
       const histCtx = extractIntentFromHistory(
         historyAsc.map((m) => ({ role: m.role, content: m.content }))
@@ -182,6 +201,7 @@ export class ChatService {
       const effectiveCuisine   = msgCuisine  ?? histCtx.cuisine;
       const effectiveLocation  = msgLocation ?? histCtx.location ?? city;
       const effectiveMichelin  = msgMichelin ?? histCtx.michelinType;
+      const effectiveAmbiance  = msgAmbiance ?? histCtx.ambiance;
 
       const isHighBudget = conversationBudget === 3;
       const baseFilters = {
@@ -190,9 +210,9 @@ export class ChatService {
         location:     effectiveLocation,
         cuisine:      effectiveCuisine,
         michelinType: effectiveMichelin as undefined,
+        ambiance:     effectiveAmbiance,
       };
 
-      // Fallback progressif
       let results = await this.restaurantRepo.findAll(baseFilters);
 
       if (!results.length && effectiveCuisine) {
@@ -213,7 +233,6 @@ export class ChatService {
       }
 
       if (results.length > 0) {
-        // Exclude restaurants already shown in this conversation
         const shownIds = new Set<string>();
         for (const msg of historyAsc) {
           const meta = msg.metadata as { restaurants?: Array<{ id: string }> } | null;
@@ -235,7 +254,6 @@ export class ChatService {
       }
     }
 
-    // ── LLM (avec contexte sur les résultats de recherche) ───────────────────
     const llmMessages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
       ...historyAsc.map((m) => ({
@@ -245,14 +263,12 @@ export class ChatService {
       { role: "user", content: userContent },
     ];
 
-    // Injecte une note de contexte si fallback utilisé
     if (searchNote) {
       llmMessages.push({ role: "system", content: `[Contexte recherche : ${searchNote} Adapte ta réponse en conséquence, sans mentionner les détails techniques.]` });
     }
 
     const sebastianText = await this.llm.chat(llmMessages);
 
-    // Sauvegarde
     await this.repo.saveMessage(sessionId, ChatRole.USER, userContent);
     const sebastianMsg = await this.repo.saveMessage(
       sessionId,

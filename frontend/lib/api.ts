@@ -1,7 +1,5 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface UserDTO {
   id: string;
   name: string;
@@ -70,8 +68,6 @@ export interface RecommendationRequestDTO {
   chatSessionId?: string;
 }
 
-// ─── HTTP helper ──────────────────────────────────────────────────────────────
-
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -83,8 +79,6 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
-
-// ─── Users ────────────────────────────────────────────────────────────────────
 
 export const usersApi = {
   create: (data: CreateUserDTO) =>
@@ -105,8 +99,6 @@ export const usersApi = {
     }),
 };
 
-// ─── Restaurants ──────────────────────────────────────────────────────────────
-
 export const restaurantsApi = {
   list: (filters?: RestaurantFilters) => {
     const params = filters ? `?${new URLSearchParams(filters as Record<string, string>)}` : "";
@@ -115,8 +107,6 @@ export const restaurantsApi = {
 
   getById: (id: string) => request<RestaurantDetailDTO>(`/restaurants/${id}`),
 };
-
-// ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export const chatApi = {
   createSession: (userId: string) =>
@@ -134,8 +124,6 @@ export const chatApi = {
   getMessages: (sessionId: string) =>
     request<ChatMessageDTO[]>(`/chat/sessions/${sessionId}/messages`),
 };
-
-// ─── Onboarding (Quiz QCM généré par LLM) ─────────────────────────────────────
 
 export interface QcmAnswer {
   axis: string;
@@ -179,8 +167,6 @@ export const onboardingApi = {
       body: JSON.stringify({ answers }),
     }),
 };
-
-// ─── Recommendations ──────────────────────────────────────────────────────────
 
 export const recommendationsApi = {
   get: (data: RecommendationRequestDTO) =>

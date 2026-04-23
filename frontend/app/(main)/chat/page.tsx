@@ -19,7 +19,7 @@ const SUGGESTIONS = [
   "Recommande-moi un restaurant ce soir",
   "J'ai envie de japonais",
   "Quelque chose de romantique",
-  "Surprise-moi !",
+  "Surprends-moi !",
 ];
 
 async function apiPost<T>(path: string, body: object): Promise<T> {
@@ -76,9 +76,8 @@ export default function ChatPage() {
         setMessages(history);
         scrollToBottom();
       } catch {
-        // session invalide → on en recrée une
         localStorage.removeItem("sebastianSessionId");
-        router.refresh();
+        window.location.reload();
       } finally {
         setLoading(false);
       }
@@ -127,16 +126,19 @@ export default function ChatPage() {
   const clearChat = useCallback(async () => {
     const userId = localStorage.getItem("sebastianUserId");
     if (!userId || !sessionId) return;
+    await fetch(`${BASE_URL}/chat/sessions/${sessionId}`, { method: "DELETE" }).catch(() => undefined);
     try {
-      await fetch(`${BASE_URL}/chat/sessions/${sessionId}`, { method: "DELETE" });
-    } catch { /* session peut déjà ne plus exister */ }
-    const { sessionId: newSid } = await apiPost<{ sessionId: string }>("/chat/sessions", { userId });
-    localStorage.setItem("sebastianSessionId", newSid);
-    setSessionId(newSid);
-    setMessages([]);
+      const { id: newSid } = await apiPost<{ id: string }>("/chat/sessions", { userId });
+      localStorage.setItem("sebastianSessionId", newSid);
+      setSessionId(newSid);
+      setMessages([]);
+    } catch {
+      localStorage.removeItem("sebastianSessionId");
+      window.location.reload();
+    }
   }, [sessionId]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     sendMessage(input);
   };

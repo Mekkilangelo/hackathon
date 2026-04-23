@@ -76,7 +76,7 @@ Valeurs JSON strictes :
 - type "multiple" : plusieurs choix possibles (diet, vibes, occasions, cuisines)
 - diet : sous-ensemble de ["tout","vegetarien","vegan","halal","sans-gluten","casher"]
 - budget : 1 (< 25€), 2 (25-60€), 3 (> 60€) — stocker comme nombre
-- vibes : sous-ensemble de ["cozy","branché","rooftop","street-food","gastro","brasserie"]
+- vibes : sous-ensemble de ["cozy","branché","terrasse","gastro"]
 - occasions : sous-ensemble de ["date","amis","solo","business","famille","brunch"]
 - cuisines : sous-ensemble de ["française","italienne","japonaise","mexicaine","indienne","fusion","méditerranéenne","asiatique"]
 - city : nom de ville libre (ex: "Grenoble", "Paris", "Lyon")`;

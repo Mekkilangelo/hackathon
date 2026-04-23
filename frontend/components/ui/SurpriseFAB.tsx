@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
+const HIDDEN_ON = ["/results", "/restaurant"];
+
 export default function SurpriseFAB() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  if (HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
 

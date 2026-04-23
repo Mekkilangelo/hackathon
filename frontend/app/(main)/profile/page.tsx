@@ -12,8 +12,6 @@ import {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
 
-// ── Types événements ──────────────────────────────────────────────────────────
-
 interface UserEvent {
   id: string;
   title: string;
@@ -56,8 +54,6 @@ function daysLabel(days: number): string {
   return `dans ${Math.ceil(days / 30)} mois`;
 }
 
-// ── Options (même que onboarding) ────────────────────────────────────────────
-
 const DIET_OPTIONS = [
   { label: "Tout mange", emoji: "🍽️", value: "tout" },
   { label: "Végétarien", emoji: "🥦", value: "vegetarien" },
@@ -70,10 +66,10 @@ const DIET_OPTIONS = [
 const VIBE_OPTIONS = [
   { label: "Cozy & intime", emoji: "🕯️", value: "cozy" },
   { label: "Branché & tendance", emoji: "✨", value: "branché" },
-  { label: "Rooftop & terrasse", emoji: "🌇", value: "rooftop" },
-  { label: "Street food", emoji: "🌮", value: "street-food" },
+  { label: "Rooftop & terrasse", emoji: "🌇", value: "terrasse" },
+  { label: "Street food", emoji: "🌮", value: "branché" },
   { label: "Gastronomique", emoji: "⭐", value: "gastro" },
-  { label: "Brasserie classique", emoji: "🥂", value: "brasserie" },
+  { label: "Brasserie classique", emoji: "🥂", value: "cozy" },
 ];
 
 const OCCASION_OPTIONS = [
@@ -114,8 +110,6 @@ const BUDGET_OPTIONS = [
   { label: "Plus de 60€", emoji: "€€€", value: 3 },
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 function toggle(arr: string[], val: string): string[] {
   return arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
 }
@@ -133,8 +127,6 @@ function labelFor(options: { label: string; value: string }[], value: string): s
   return options.find((o) => o.value === value)?.label ?? value;
 }
 
-// ── Chip ─────────────────────────────────────────────────────────────────────
-
 function Chip({ label }: { label: string }) {
   return (
     <span
@@ -145,8 +137,6 @@ function Chip({ label }: { label: string }) {
     </span>
   );
 }
-
-// ── Section ──────────────────────────────────────────────────────────────────
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -161,8 +151,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   );
 }
-
-// ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -180,7 +168,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // ── Événements ────────────────────────────────────────────────────────────
   const [events, setEvents] = useState<UserEvent[]>([]);
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventForm, setEventForm] = useState({
@@ -192,7 +179,6 @@ export default function ProfilePage() {
   });
   const [savingEvent, setSavingEvent] = useState(false);
 
-  // ── Notifications push ────────────────────────────────────────────────────
   const [notifPermission, setNotifPermission] = useState<string>("default");
   const [togglingNotif, setTogglingNotif] = useState(false);
 
@@ -310,13 +296,10 @@ export default function ProfilePage() {
 
   const budgetLabel = BUDGET_OPTIONS.find((b) => b.value === profile.budget);
 
-  // ── Vue lecture ──────────────────────────────────────────────────────────
-
   if (!editing) {
     return (
       <>
       <div className="container-app flex flex-col gap-4 py-6">
-        {/* Avatar + nom */}
         <div className="flex flex-col items-center gap-3 py-2">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
@@ -334,7 +317,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Sections profil */}
         <Section title="Régime alimentaire">
           <div className="flex flex-wrap gap-2">
             {profile.diet.length > 0
@@ -375,7 +357,6 @@ export default function ProfilePage() {
           </div>
         </Section>
 
-        {/* Agenda */}
         <Section title="Mon agenda">
           <div className="flex flex-col gap-2">
             {events.length === 0 && (
@@ -422,7 +403,6 @@ export default function ProfilePage() {
           </div>
         </Section>
 
-        {/* Notifications */}
         {notifPermission !== "denied" && (
           <button
             onClick={handleToggleNotifications}
@@ -447,7 +427,6 @@ export default function ProfilePage() {
           </p>
         )}
 
-        {/* Actions */}
         <button
           onClick={() => setEditing(true)}
           className="w-full h-12 rounded-xl text-sm font-semibold transition-all active:scale-95"
@@ -465,7 +444,6 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Modal ajout événement */}
       {showEventModal && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center p-4"
@@ -480,7 +458,6 @@ export default function ProfilePage() {
               Nouvelle occasion
             </h3>
 
-            {/* Type */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Type</label>
               <div className="grid grid-cols-2 gap-2">
@@ -501,7 +478,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Titre */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Titre</label>
               <input
@@ -514,7 +490,6 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Date */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Date {eventForm.isRecurring ? "(jour & mois, l'année est ignorée)" : ""}
@@ -528,7 +503,6 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Récurrent */}
             <label className="flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -563,8 +537,6 @@ export default function ProfilePage() {
     );
   }
 
-  // ── Vue édition ──────────────────────────────────────────────────────────
-
   return (
     <div className="container-app flex flex-col gap-4 py-6">
       <div className="flex items-center gap-2">
@@ -580,7 +552,6 @@ export default function ProfilePage() {
         </h2>
       </div>
 
-      {/* Régime */}
       <Section title="Régime alimentaire">
         <div className="flex flex-col gap-2">
           {DIET_OPTIONS.map((opt) => (
@@ -595,7 +566,6 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      {/* Budget */}
       <Section title="Budget">
         <div className="flex flex-col gap-2">
           {BUDGET_OPTIONS.map((opt) => (
@@ -610,7 +580,6 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      {/* Ambiances */}
       <Section title="Ambiances">
         <div className="flex flex-col gap-2">
           {VIBE_OPTIONS.map((opt) => (
@@ -625,7 +594,6 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      {/* Occasions */}
       <Section title="Occasions">
         <div className="flex flex-col gap-2">
           {OCCASION_OPTIONS.map((opt) => (
@@ -642,7 +610,6 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      {/* Cuisines */}
       <Section title="Cuisines favorites">
         <div className="flex flex-col gap-2">
           {CUISINE_OPTIONS.map((opt) => (
@@ -659,7 +626,6 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      {/* Zone */}
       <Section title="Zone Paris">
         <div className="flex flex-col gap-2">
           {ZONE_OPTIONS.map((opt) => (

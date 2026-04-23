@@ -20,6 +20,7 @@ export class RestaurantRepository {
     if (filters.country) where.country = { contains: filters.country, mode: "insensitive" };
     if (filters.michelinType) where.michelinType = filters.michelinType;
     if (filters.greenStar !== undefined) where.greenStar = filters.greenStar;
+    if (filters.ambiance) where.ambiance = { contains: filters.ambiance, mode: "insensitive" };
     if (filters.tags) {
       where.tags = { hasSome: filters.tags.split(",").map((t: string) => t.trim()) };
     }
