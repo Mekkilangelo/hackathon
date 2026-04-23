@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   app:
     build:
@@ -8,6 +6,22 @@ services:
     ports:
       - "3001:3001"
       - "3000:3000"
+    environment:
+      # backend
+      DATABASE_URL: postgresql://sebastian:sebastian@postgres:5432/sebastian_db
+      PORT: 3001
+      NODE_ENV: production
+      FRONTEND_URL: http://localhost:3000
+      LLM_PROVIDER: ${LLM_PROVIDER:-groq}
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_MODEL: ${LLM_MODEL:-llama-3.3-70b-versatile}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-admin}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:contact@sebastian.app}
+      # frontend
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
     volumes:
       - .:/workspace:cached
       - dev_node_modules:/workspace/node_modules
@@ -30,6 +44,12 @@ services:
       - "5432:5432"
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sebastian -d sebastian_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   ollama:
     image: ollama/ollama
     ports:
