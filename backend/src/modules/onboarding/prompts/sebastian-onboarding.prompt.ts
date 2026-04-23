@@ -75,9 +75,12 @@ Valeurs JSON strictes :
 - type "single" : un seul choix parmi les options (budget, city)
 - type "multiple" : plusieurs choix possibles (diet, vibes, occasions, cuisines)
 - diet : sous-ensemble de ["tout","vegetarien","vegan","halal","sans-gluten","casher"]
-- budget : 1 (< 25€), 2 (25-60€), 3 (> 60€) — stocker comme nombre
+- budget options : value DOIT être une chaîne de caractères entre guillemets — "1" (< 25€), "2" (25-60€), "3" (> 60€)
+  Exemple correct : {"label":"Moins de 25€","value":"1","emoji":"💶"}
+  ⚠️ Ne JAMAIS écrire value:1 (nombre) — toujours "1" (string)
 - vibes : sous-ensemble de ["cozy","branché","rooftop","street-food","gastro","brasserie"]
 - occasions : sous-ensemble de ["date","amis","solo","business","famille","brunch"]
 - cuisines : sous-ensemble de ["française","italienne","japonaise","mexicaine","indienne","fusion","méditerranéenne","asiatique"]
-- city : nom de ville libre (ex: "Grenoble", "Paris", "Lyon")`;
+- city : nom de ville libre (ex: "Grenoble", "Paris", "Lyon")
+- RÈGLE ABSOLUE : dans les options, "value" est TOUJOURS une string JSON (entre guillemets), jamais un nombre`;
 }

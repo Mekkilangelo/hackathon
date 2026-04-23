@@ -2,16 +2,30 @@ import { z } from "zod";
 
 // ─── Request ──────────────────────────────────────────────────────────────────
 
+<<<<<<< HEAD
 const answerValue = z.union([z.string(), z.number().transform(String)]);
+=======
+// answer peut être string, string[], ou nombre (le LLM envoie parfois 1/2/3 pour budget)
+const answerValue = z
+  .union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))])
+  .transform((v) => {
+    if (Array.isArray(v)) return v.map(String);
+    return String(v);
+  });
+>>>>>>> main
 
 export const QcmAnswerSchema = z.object({
   axis: z.string(),
   question: z.string(),
+<<<<<<< HEAD
   answer: z.union([answerValue, z.array(answerValue)]),
+=======
+  answer: answerValue,
+>>>>>>> main
 });
 
 export const OnboardingNextSchema = z.object({
-  answers: z.array(QcmAnswerSchema).max(20),
+  answers: z.array(QcmAnswerSchema).max(20).default([]),
 });
 
 export type QcmAnswer = z.infer<typeof QcmAnswerSchema>;

@@ -1,5 +1,8 @@
 node_modules
 .next
 .env
+<<<<<<< HEAD
 .env.*
+=======
+>>>>>>> main
 *.log

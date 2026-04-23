@@ -1,0 +1,40 @@
+{
+  "name": "hackathon",
+  "remoteUser": "node",
+  "dockerComposeFile": "../docker-compose.dev.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "overrideCommand": false,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "aaron-bond.better-comments",
+        "mikestead.dotenv",
+        "eamodio.gitlens",
+        "GitHub.copilot-chat",
+        "shardulm94.trailing-spaces",
+        "ritwickdey.LiveServer"
+      ],
+      "settings": {
+        "files.eol": "auto",
+        "editor.bracketPairColorization.enabled": true,
+        "editor.guides.bracketPairs": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+        "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+        "js/ts.tsdk.path": "node_modules/typescript/lib"
+      }
+    }
+  },
+  "forwardPorts": [3000, 8081, 3001],
+  "mounts": ["source=${localEnv:HOME}/.ssh,target=/root/.ssh,readonly"],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "/tmp/ssh-agent.sock"
+  },
+  "postStartCommand": "sudo chown -R node:node /workspace && npm i"
+}

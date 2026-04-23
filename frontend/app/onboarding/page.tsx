@@ -8,26 +8,43 @@ import { onboardingApi, usersApi, type QcmAnswer, type OnboardingNextResponse } 
 
 const TOTAL_AXES = 7;
 
+const AXIS_LABELS: Record<string, string> = {
+  prenom: "Votre prénom",
+  nom: "Votre prénom",
+  identite: "Votre prénom",
+  occasion: "L'occasion",
+  regime: "Régime alimentaire",
+  budget: "Votre budget",
+  ambiance: "L'ambiance",
+  cuisine: "La cuisine",
+  quartier: "Le quartier",
+  ville: "La ville",
+};
+
+function getAxisLabel(axis: string): string {
+  const key = axis.toLowerCase();
+  for (const [k, v] of Object.entries(AXIS_LABELS)) {
+    if (key.includes(k)) return v;
+  }
+  return axis;
+}
+
 type QuestionState = Extract<OnboardingNextResponse, { done: false }>;
+
+type Screen = "intro" | "quiz" | "finishing";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [screen, setScreen] = useState<Screen>("intro");
   const [answers, setAnswers] = useState<QcmAnswer[]>([]);
   const [current, setCurrent] = useState<QuestionState | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [textValue, setTextValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState("");
 
-  // Charge la première question au montage
-  useEffect(() => {
-    fetchNext([]);
-  }, []);
-
-  // Focus sur l'input texte quand la question est de type "text"
   useEffect(() => {
     if (current?.type === "text") {
       setTimeout(() => inputRef.current?.focus(), 150);
@@ -43,6 +60,10 @@ export default function OnboardingPage() {
       const res = await onboardingApi.next(history);
 
       if (res.done) {
+<<<<<<< HEAD
+=======
+        setScreen("finishing");
+>>>>>>> main
         const user = await usersApi.create({ name: res.profile.name });
         await usersApi.createProfile(user.id, {
           diet: res.profile.diet,
@@ -54,8 +75,12 @@ export default function OnboardingPage() {
         });
         localStorage.setItem("sebastianUserId", user.id);
         localStorage.setItem("sebastianUserName", res.profile.name);
+<<<<<<< HEAD
         setFinishing(true);
         setTimeout(() => router.push("/chat"), 1200);
+=======
+        setTimeout(() => router.push("/chat"), 1800);
+>>>>>>> main
       } else {
         setCurrent(res);
       }
@@ -64,6 +89,11 @@ export default function OnboardingPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function startQuiz() {
+    setScreen("quiz");
+    fetchNext([]);
   }
 
   function toggle(value: string) {
@@ -85,7 +115,12 @@ export default function OnboardingPage() {
     const answer: QcmAnswer = {
       axis: current.axis,
       question: current.question,
-      answer: current.type === "text" ? textValue.trim() : current.type === "single" ? selected[0] : selected,
+      answer:
+        current.type === "text"
+          ? textValue.trim()
+          : current.type === "single"
+          ? selected[0]
+          : selected,
     };
 
     const next = [...answers, answer];
@@ -94,34 +129,123 @@ export default function OnboardingPage() {
   }
 
   const progress = answers.length;
+  const stepNumber = Math.min(progress + 1, TOTAL_AXES);
 
+  // ── Écran d'introduction ──────────────────────────────────────────────────────
+  if (screen === "intro") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
+        {/* Halo de fond */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 60%, oklch(0.215 0.098 264 / 0.5) 0%, transparent 70%)",
+          }}
+        />
+
+        <div className="container-app flex flex-col items-center text-center gap-8 relative z-10 px-6">
+          {/* Logo animé */}
+          <div className="animate-[spin_12s_linear_infinite] opacity-90">
+            <SebastianLogo size={72} />
+          </div>
+
+          {/* Message de Sebastian */}
+          <div className="flex flex-col gap-3">
+            <h1
+              className="text-3xl font-bold leading-tight text-foreground"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Bonjour, je suis Sebastian
+            </h1>
+            <p className="text-base text-muted-foreground leading-relaxed max-w-xs mx-auto">
+              Votre majordome gastronomique personnel. En{" "}
+              <span style={{ color: "var(--or)" }} className="font-semibold">
+                7 questions
+              </span>
+              , je vais composer votre empreinte gastronomique pour vous suggérer les meilleures
+              tables de Paris.
+            </p>
+          </div>
+
+          {/* Indicateur du parcours */}
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            {Array.from({ length: TOTAL_AXES }).map((_, i) => (
+              <span
+                key={i}
+                className="w-2 h-2 rounded-full"
+                style={{ background: "var(--border)" }}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground -mt-4">7 étapes · environ 2 minutes</p>
+
+          {/* CTA */}
+          <button
+            type="button"
+            onClick={startQuiz}
+            className="w-full max-w-xs h-14 rounded-xl font-semibold text-base tracking-wide transition-all active:scale-95"
+            style={{ background: "var(--rouge)", color: "white" }}
+          >
+            Commencer la découverte →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Écran de fin ──────────────────────────────────────────────────────────────
+  if (screen === "finishing") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-6">
+        <div className="animate-[spin_3s_linear_infinite] opacity-70">
+          <SebastianLogo size={56} />
+        </div>
+        <div className="text-center">
+          <p className="text-lg font-semibold text-foreground">Votre profil est prêt.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sebastian prépare votre sélection...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Écran du quiz ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
+      {/* Header avec progression */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <SebastianLogo size={28} />
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">Sebastian</p>
           <p className="text-xs text-muted-foreground">Votre majordome gastronomique</p>
         </div>
-        {/* Progression par axes */}
-        <div className="flex gap-1">
-          {Array.from({ length: TOTAL_AXES }).map((_, i) => (
-            <span
-              key={i}
-              className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-              style={{
-                background: i < progress ? "var(--or)" : "var(--border)",
-              }}
-            />
-          ))}
+
+        {/* Progression explicite */}
+        <div className="flex flex-col items-end gap-1">
+          <p className="text-xs font-semibold" style={{ color: "var(--or)" }}>
+            {loading && !current ? "…" : `${stepNumber} / ${TOTAL_AXES}`}
+          </p>
+          <div className="flex gap-1">
+            {Array.from({ length: TOTAL_AXES }).map((_, i) => (
+              <span
+                key={i}
+                className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  background: i < progress ? "var(--or)" : "var(--border)",
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Contenu principal */}
       <div className="container-app flex-1 flex flex-col gap-6 py-4 pb-8">
 
-        {/* État de chargement initial */}
+        {/* Chargement initial */}
         {loading && !current && (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <div className="animate-[spin_3s_linear_infinite] opacity-60">
@@ -131,22 +255,21 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* État final */}
-        {finishing && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
-            <SebastianLogo size={56} />
-            <div className="text-center">
-              <p className="text-lg font-semibold text-foreground">Votre profil est prêt.</p>
-              <p className="text-sm text-muted-foreground mt-1">Sebastian prépare votre sélection...</p>
-            </div>
-          </div>
-        )}
-
         {/* Question active */}
-        {current && !finishing && (
+        {current && (
           <>
+            {/* Label de l'axe courant */}
+            <div className="flex items-center gap-2 pt-2">
+              <span
+                className="text-xs font-semibold tracking-widest uppercase"
+                style={{ color: "var(--or)" }}
+              >
+                Étape {stepNumber} · {getAxisLabel(current.axis)}
+              </span>
+            </div>
+
             {/* Texte de la question */}
-            <div className="flex flex-col gap-1 pt-2">
+            <div className="flex flex-col gap-1">
               <h2
                 className="text-2xl font-bold leading-tight"
                 style={{ fontFamily: "var(--font-display)" }}
