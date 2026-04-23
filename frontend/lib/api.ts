@@ -10,6 +10,14 @@ export type MichelinTypeDTO =
   | "bib-gourmand"
   | "etoile-verte";
 
+export type MichelinTypeDTO =
+  | "ETOILE"
+  | "BIB_GOURMAND"
+  | "ETOILE_VERTE"
+  | "etoile"
+  | "bib-gourmand"
+  | "etoile-verte";
+
 export interface UserDTO {
   id: string;
   name: string;
