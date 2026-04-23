@@ -28,11 +28,16 @@ export class OnboardingService {
     const end = text.indexOf(TAG_CLOSE);
 
     if (start === -1 || end === -1) {
-      // Fallback si le LLM ne respecte pas le format — on relance avec un message d'erreur minimal
+      console.error("[Onboarding] LLM response missing <QCM> tag:\n", text.slice(0, 500));
       throw new Error("Réponse LLM malformée — balise <QCM> manquante");
     }
 
     const json = text.slice(start + TAG_OPEN.length, end).trim();
-    return JSON.parse(json) as OnboardingNextResponse;
+    try {
+      return JSON.parse(json) as OnboardingNextResponse;
+    } catch (e) {
+      console.error("[Onboarding] JSON parse error:", e, "\nRaw JSON:", json.slice(0, 300));
+      throw new Error("Réponse LLM malformée — JSON invalide");
+    }
   }
 }

@@ -27,18 +27,26 @@ export interface RestaurantCardDTO {
   name: string;
   cuisine: string;
   priceRange: number;
-  michelinType: "etoile" | "bib-gourmand" | "etoile-verte";
-  imageUrl: string;
+  michelinType: "ETOILE" | "BIB_GOURMAND" | "ETOILE_VERTE" | "SELECTION";
+  imageUrl: string | null;
   matchScore: number;
   tags: string[];
+  zone?: string | null;
+  ambiance?: string | null;
 }
 
 export interface RestaurantDetailDTO extends RestaurantCardDTO {
   description: string;
   address: string;
-  ambiance: string;
-  hours: Record<string, string>;
+  latitude: number | null;
+  longitude: number | null;
+  hours: Record<string, string> | null;
   gallery: string[];
+  websiteUrl: string | null;
+  michelinUrl: string | null;
+  location: string;
+  country: string | null;
+  greenStar: boolean;
 }
 
 export interface RestaurantFilters {
@@ -60,7 +68,7 @@ export interface ChatMessageDTO {
   sessionId: string;
   role: "user" | "sebastian";
   content: string;
-  metadata?: { restaurants?: RestaurantCardDTO[] };
+  metadata?: { restaurants?: RestaurantCardDTO[] } | null;
   createdAt: string;
 }
 
@@ -119,7 +127,7 @@ export const restaurantsApi = {
 
 export const chatApi = {
   createSession: (userId: string) =>
-    request<ChatSessionDTO>("/chat/sessions", {
+    request<{ session: ChatSessionDTO; messages: ChatMessageDTO[] }>("/chat/sessions", {
       method: "POST",
       body: JSON.stringify({ userId }),
     }),
