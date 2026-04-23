@@ -10,6 +10,14 @@ export type MichelinTypeDTO =
   | "bib-gourmand"
   | "etoile-verte";
 
+export type MichelinTypeDTO =
+  | "ETOILE"
+  | "BIB_GOURMAND"
+  | "ETOILE_VERTE"
+  | "etoile"
+  | "bib-gourmand"
+  | "etoile-verte";
+
 export interface UserDTO {
   id: string;
   name: string;
@@ -27,7 +35,7 @@ export interface UserProfileDTO {
   vibes: string[];
   occasions: string[];
   cuisines: string[];
-  zone?: string;
+  city?: string;
 }
 
 export interface RestaurantCardDTO {
@@ -35,19 +43,26 @@ export interface RestaurantCardDTO {
   name: string;
   cuisine: string;
   priceRange: number;
-  michelinType: MichelinTypeDTO;
-  imageUrl: string;
+  michelinType: "ETOILE" | "BIB_GOURMAND" | "ETOILE_VERTE" | "SELECTION";
+  imageUrl: string | null;
   matchScore: number;
   tags: string[];
-  zone: string;
-  ambiance: string;
+  zone?: string | null;
+  ambiance?: string | null;
 }
 
 export interface RestaurantDetailDTO extends RestaurantCardDTO {
   description: string;
   address: string;
-  hours: Record<string, string>;
+  latitude: number | null;
+  longitude: number | null;
+  hours: Record<string, string> | null;
   gallery: string[];
+  websiteUrl: string | null;
+  michelinUrl: string | null;
+  location: string;
+  country: string | null;
+  greenStar: boolean;
 }
 
 export interface RestaurantFilters {
@@ -69,7 +84,7 @@ export interface ChatMessageDTO {
   sessionId: string;
   role: "user" | "sebastian";
   content: string;
-  metadata?: { restaurants?: RestaurantCardDTO[] };
+  metadata?: { restaurants?: RestaurantCardDTO[] } | null;
   createdAt: string;
 }
 
@@ -128,7 +143,7 @@ export const restaurantsApi = {
 
 export const chatApi = {
   createSession: (userId: string) =>
-    request<ChatSessionDTO>("/chat/sessions", {
+    request<{ session: ChatSessionDTO; messages: ChatMessageDTO[] }>("/chat/sessions", {
       method: "POST",
       body: JSON.stringify({ userId }),
     }),
@@ -141,6 +156,51 @@ export const chatApi = {
 
   getMessages: (sessionId: string) =>
     request<ChatMessageDTO[]>(`/chat/sessions/${sessionId}/messages`),
+};
+
+// ─── Onboarding (Quiz QCM généré par LLM) ─────────────────────────────────────
+
+export interface QcmAnswer {
+  axis: string;
+  question: string;
+  answer: string | string[];
+}
+
+export interface QcmOption {
+  label: string;
+  value: string;
+  emoji?: string;
+}
+
+export type OnboardingNextResponse =
+  | {
+    done: false;
+    axis: string;
+    question: string;
+    subtitle?: string;
+    type: "single" | "multiple" | "text";
+    options?: QcmOption[];
+  }
+  | {
+    done: true;
+    message: string;
+    profile: {
+      name: string;
+      city: string;
+      diet: string[];
+      budget: number;
+      vibes: string[];
+      occasions: string[];
+      cuisines: string[];
+    };
+  };
+
+export const onboardingApi = {
+  next: (answers: QcmAnswer[]) =>
+    request<OnboardingNextResponse>("/onboarding/next", {
+      method: "POST",
+      body: JSON.stringify({ answers }),
+    }),
 };
 
 // ─── Recommendations ──────────────────────────────────────────────────────────

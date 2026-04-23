@@ -1,216 +1,259 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { restaurantsApi, type RestaurantDetailDTO } from "@/lib/api";
+import { SebastianLogo } from "@/components/layout/Header";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  formatPriceRange,
-  formatServiceHours,
-  getMichelinMeta,
-  getRestaurantDetailData,
-} from "@/lib/restaurant-data";
 
-export default async function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const restaurant = await getRestaurantDetailData(id);
+const MICHELIN_BADGE: Record<string, { label: string; color: string }> = {
+  ETOILE: { label: "⭐ Étoilé Michelin", color: "var(--or)" },
+  BIB_GOURMAND: { label: "😊 Bib Gourmand", color: "var(--rouge)" },
+  ETOILE_VERTE: { label: "🌿 Étoile Verte", color: "#4caf50" },
+  SELECTION: { label: "◆ Sélection Michelin", color: "var(--muted-foreground)" },
+};
 
-  if (!restaurant) {
-    notFound();
+const PRICE: Record<number, string> = { 1: "€", 2: "€€", 3: "€€€", 4: "€€€€" };
+
+const DAY_FR: Record<string, string> = {
+  monday: "Lundi",
+  tuesday: "Mardi",
+  wednesday: "Mercredi",
+  thursday: "Jeudi",
+  friday: "Vendredi",
+  saturday: "Samedi",
+  sunday: "Dimanche",
+};
+
+export default function RestaurantPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const [restaurant, setRestaurant] = useState<RestaurantDetailDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    restaurantsApi
+      .getById(id)
+      .then(setRestaurant)
+      .catch(() => setError("Restaurant introuvable."))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center gap-3">
+        <div className="animate-[spin_3s_linear_infinite] opacity-60">
+          <SebastianLogo size={40} />
+        </div>
+        <p className="text-sm text-muted-foreground">Chargement...</p>
+      </div>
+    );
   }
 
-  const michelin = getMichelinMeta(restaurant.michelinType);
-  const gallery = [restaurant.imageUrl, ...restaurant.gallery];
-  const hours = formatServiceHours(restaurant.hours);
-  const reservationHref = `https://www.google.com/search?q=${encodeURIComponent(
-    `${restaurant.name} Paris reservation`,
-  )}`;
-
-  return (
-    <div className="flex flex-col gap-6 py-4 pb-10">
-      <div className="flex items-center justify-between gap-3">
-        <Link
-          href="/results"
-          className="inline-flex h-10 items-center justify-center rounded-full border border-border px-4 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
+  if (error || !restaurant) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center gap-4 text-center py-12">
+        <p className="text-sm text-muted-foreground">{error || "Restaurant introuvable."}</p>
+        <button
+          onClick={() => router.back()}
+          className="text-sm underline"
+          style={{ color: "var(--or)" }}
         >
           ← Retour
-        </Link>
-        <span
-          className="rounded-full px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em]"
-          style={{ color: michelin.accent, background: michelin.surface }}
-        >
-          {michelin.label}
-        </span>
+        </button>
       </div>
+    );
+  }
 
-      <section className="overflow-hidden rounded-[28px] border border-border bg-card/85 shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
-        <div className="relative h-[320px] overflow-hidden">
+  const badge = MICHELIN_BADGE[restaurant.michelinType] ?? MICHELIN_BADGE.SELECTION;
+
+  return (
+    <div className="flex flex-col flex-1 pb-6 -mt-0">
+      {/* Hero image */}
+      <div className="relative w-full h-56 shrink-0">
+        {restaurant.imageUrl ? (
           <img
             src={restaurant.imageUrl}
             alt={restaurant.name}
-            className="h-full w-full object-cover"
+            className="w-full h-full object-cover"
           />
-
+        ) : (
           <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.8) 100%)",
-            }}
-          />
+            className="w-full h-full flex items-center justify-center text-5xl"
+            style={{ background: "var(--muted)" }}
+          >
+            🍽️
+          </div>
+        )}
+        {/* Bouton retour flottant */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm"
+          style={{ background: "rgba(0,0,0,0.5)", color: "white" }}
+          aria-label="Retour"
+        >
+          ←
+        </button>
+        {/* Badge Michelin flottant */}
+        <span
+          className="absolute top-4 right-4 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm"
+          style={{ background: badge.color + "dd", color: "white" }}
+        >
+          {badge.label}
+        </span>
+      </div>
 
-          <div className="absolute inset-x-5 bottom-5 flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-black/35 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/88 backdrop-blur-sm">
-                {restaurant.cuisine}
-              </span>
-              <span className="rounded-full bg-black/35 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/88 backdrop-blur-sm">
-                {restaurant.zone}
-              </span>
-              <span className="rounded-full bg-black/35 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/88 backdrop-blur-sm">
-                {restaurant.ambiance}
-              </span>
-            </div>
+      {/* Galerie horizontale */}
+      {restaurant.gallery && restaurant.gallery.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
+          {restaurant.gallery.map((url, i) => (
+            <img
+              key={i}
+              src={url}
+              alt={`${restaurant.name} ${i + 1}`}
+              className="h-20 w-28 object-cover rounded-xl shrink-0"
+            />
+          ))}
+        </div>
+      )}
 
-            <div className="flex items-end justify-between gap-4">
-              <div className="min-w-0">
-                <h1
-                  className="text-4xl font-semibold leading-none text-white"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {restaurant.name}
-                </h1>
-                <p className="mt-2 text-sm leading-relaxed text-white/78">
-                  {restaurant.address}
-                </p>
-              </div>
-
-              <span className="shrink-0 rounded-full bg-white/12 px-4 py-2 text-base font-semibold text-white backdrop-blur-sm">
-                {formatPriceRange(restaurant.priceRange)}
-              </span>
-            </div>
+      {/* Contenu */}
+      <div className="flex flex-col gap-5 px-4 pt-4">
+        {/* Nom + infos rapides */}
+        <div className="flex flex-col gap-1.5">
+          <h1
+            className="text-2xl font-bold text-foreground leading-tight"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {restaurant.name}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <span>{restaurant.cuisine}</span>
+            <span>·</span>
+            <span>{PRICE[restaurant.priceRange] ?? "€"}</span>
+            {restaurant.zone && (
+              <>
+                <span>·</span>
+                <span>{restaurant.zone}</span>
+              </>
+            )}
+            {restaurant.location && (
+              <>
+                <span>·</span>
+                <span>{restaurant.location}</span>
+              </>
+            )}
           </div>
         </div>
-      </section>
 
-      <section className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-[24px] border border-border bg-card/75 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Note Sebastian
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-foreground/88">
-            {restaurant.recommendationReason ??
-              "Une table choisie pour son identité claire, son exécution solide et la sensation de moment juste qu'elle sait installer."}
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            {restaurant.description}
-          </p>
-        </div>
+        {/* Description */}
+        {restaurant.description && (
+          <p className="text-sm text-muted-foreground leading-relaxed">{restaurant.description}</p>
+        )}
 
-        <div className="rounded-[24px] border border-border bg-card/75 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Détails
-          </p>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Match</p>
-              <p className="mt-1 font-semibold text-foreground">{restaurant.matchScore}%</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Ambiance</p>
-              <p className="mt-1 font-semibold text-foreground">{restaurant.ambiance}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Quartier</p>
-              <p className="mt-1 font-semibold text-foreground">{restaurant.zone}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Cuisine</p>
-              <p className="mt-1 font-semibold text-foreground">{restaurant.cuisine}</p>
-            </div>
+        {/* Ambiance */}
+        {restaurant.ambiance && (
+          <div
+            className="rounded-xl p-3 text-sm italic"
+            style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
+          >
+            « {restaurant.ambiance} »
           </div>
+        )}
 
-          <div className="mt-5 flex flex-wrap gap-2">
+        {/* Tags */}
+        {restaurant.tags && restaurant.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
             {restaurant.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-border px-3 py-1 text-xs uppercase tracking-[0.16em] text-muted-foreground"
+                className="text-xs px-3 py-1 rounded-full"
+                style={{ background: "var(--muted)", color: "var(--muted-foreground)" }}
               >
                 {tag}
               </span>
             ))}
           </div>
-        </div>
-      </section>
+        )}
 
-      <section className="rounded-[24px] border border-border bg-card/75 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Galerie</p>
-            <h2
-              className="mt-2 text-2xl font-semibold text-foreground"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Le décor compte autant que l&apos;assiette.
-            </h2>
+        {/* Adresse */}
+        {restaurant.address && (
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <span className="mt-0.5">📍</span>
+            <span>{restaurant.address}</span>
           </div>
+        )}
 
-          <a
-            href={reservationHref}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
-            style={{ background: "var(--rouge)" }}
-          >
-            Réserver
-          </a>
-        </div>
-
-        <div className="mt-5 flex snap-x gap-3 overflow-x-auto pb-1">
-          {gallery.map((image, index) => (
+        {/* Horaires */}
+        {restaurant.hours && Object.keys(restaurant.hours).length > 0 && (
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+              Horaires
+            </p>
             <div
-              key={`${image}-${index}`}
-              className="relative h-56 min-w-[240px] snap-start overflow-hidden rounded-[20px] border border-white/8"
+              className="rounded-xl overflow-hidden border border-border"
+              style={{ background: "var(--card)" }}
             >
-              <img
-                src={image}
-                alt={`${restaurant.name} ${index + 1}`}
-                className="h-full w-full object-cover"
-              />
+              {Object.entries(restaurant.hours).map(([day, hours], i) => (
+                <div
+                  key={day}
+                  className="flex justify-between items-center px-3 py-2 text-sm"
+                  style={{
+                    borderTop: i > 0 ? "1px solid var(--border)" : "none",
+                  }}
+                >
+                  <span className="text-muted-foreground">{DAY_FR[day] ?? day}</span>
+                  <span className="font-medium text-foreground">{hours}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-[24px] border border-border bg-card/75 p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Horaires</p>
-            <h2
-              className="mt-2 text-2xl font-semibold text-foreground"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Quand y aller
-            </h2>
           </div>
-          <Link
-            href="/results"
-            className="text-sm font-semibold transition-colors"
-            style={{ color: "var(--or)" }}
-          >
-            Voir les autres →
-          </Link>
+        )}
+
+        {/* CTA Réserver */}
+        <div className="flex flex-col gap-2 pt-2">
+          {restaurant.websiteUrl ? (
+            <a
+              href={restaurant.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center h-13 rounded-xl font-semibold text-sm tracking-wide transition-all active:scale-95"
+              style={{ background: "var(--rouge)", color: "white", height: "52px" }}
+            >
+              Réserver une table →
+            </a>
+          ) : (
+            <button
+              disabled
+              className="flex items-center justify-center h-13 rounded-xl font-semibold text-sm opacity-40 cursor-not-allowed"
+              style={{
+                background: "var(--muted)",
+                color: "var(--muted-foreground)",
+                height: "52px",
+              }}
+            >
+              Réservation non disponible
+            </button>
+          )}
+
+          {restaurant.michelinUrl && (
+            <a
+              href={restaurant.michelinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center h-10 rounded-xl text-xs font-medium border border-border text-muted-foreground transition-all active:scale-95 hover:text-foreground"
+            >
+              Voir sur Guide Michelin
+            </a>
+          )}
         </div>
 
-        <div className="mt-5 grid gap-3">
-          {hours.map(({ day, slot }) => (
-            <div
-              key={day}
-              className="flex items-center justify-between rounded-2xl border border-border bg-background/40 px-4 py-3 text-sm"
-            >
-              <span className="font-medium text-foreground">{day}</span>
-              <span className="text-right text-muted-foreground">{slot}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+        {/* Lien retour chat */}
+        <Link href="/chat" className="text-xs text-center text-muted-foreground underline pb-2">
+          ← Retour à Sebastian
+        </Link>
+      </div>
     </div>
   );
 }

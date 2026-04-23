@@ -51,6 +51,9 @@ cd backend && npm run dev
 
 # Terminal 2 — Frontend
 cd frontend && npm run dev
+
+# Forcer le reset
+npx prisma db push --force-reset
 ```
 
 ## Accès

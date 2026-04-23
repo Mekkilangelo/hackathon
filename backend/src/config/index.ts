@@ -7,7 +7,8 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL ?? "",
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:3000",
   llm: {
+    provider: process.env.LLM_PROVIDER ?? "groq",
     apiKey: process.env.LLM_API_KEY ?? "",
-    model: process.env.LLM_MODEL ?? "claude-sonnet-4-6",
+    model: process.env.LLM_MODEL ?? "llama-3.3-70b-versatile",
   },
 } as const;
