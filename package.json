@@ -14,8 +14,7 @@
     "lint:front": "cd frontend && npm run lint",
     "lint:back": "cd backend && npm run lint",
     "test": "npm run test:back",
-    "test:back": "cd backend && npm test",
-    "prepare": "husky"
+    "test:back": "cd backend && npm test"
   },
   "repository": {
     "type": "git",
