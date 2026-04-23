@@ -34,6 +34,15 @@ export class ChatController {
     }
   };
 
+  deleteSession = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.service.deleteSession(req.params.sessionId);
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  };
+
   sendMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { content, visitedRestaurantIds } = SendMessageSchema.parse(req.body);

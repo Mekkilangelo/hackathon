@@ -33,4 +33,8 @@ export class ChatRepository {
       data: { sessionId, role, content, metadata: metadata ?? undefined },
     });
   }
+
+  deleteSession(sessionId: string) {
+    return prisma.chatSession.delete({ where: { id: sessionId } });
+  }
 }

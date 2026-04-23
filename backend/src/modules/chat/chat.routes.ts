@@ -22,6 +22,9 @@ router.post("/sessions", ctrl.createSession);
 // GET /api/chat/sessions/:sessionId/messages
 router.get("/sessions/:sessionId/messages", ctrl.getMessages);
 
+// DELETE /api/chat/sessions/:sessionId
+router.delete("/sessions/:sessionId", ctrl.deleteSession);
+
 // POST /api/chat/sessions/:sessionId/messages
 router.post("/sessions/:sessionId/messages", ctrl.sendMessage);
 

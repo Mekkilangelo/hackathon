@@ -8,7 +8,13 @@ export class RestaurantRepository {
     const where: Record<string, unknown> = {};
 
     if (filters.cuisine) where.cuisine = { contains: filters.cuisine, mode: "insensitive" };
-    if (filters.budget) where.priceRange = { lte: filters.budget };
+    if (filters.priceMin && filters.budget) {
+      where.priceRange = { gte: filters.priceMin, lte: filters.budget };
+    } else if (filters.priceMin) {
+      where.priceRange = { gte: filters.priceMin };
+    } else if (filters.budget) {
+      where.priceRange = { lte: filters.budget };
+    }
     if (filters.zone) where.zone = filters.zone;
     if (filters.location) where.location = { contains: filters.location, mode: "insensitive" };
     if (filters.country) where.country = { contains: filters.country, mode: "insensitive" };

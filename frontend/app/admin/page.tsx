@@ -119,7 +119,7 @@ export default function AdminPage() {
 
   const openEdit = async (id: string) => {
     const res = await fetch(`${BASE_URL}/admin/restaurants/${id}`, {
-      headers: { "x-admin-token": token! },
+      headers: adminHeaders(token!),
     });
     const r: RestaurantFull = await res.json();
     setForm({
@@ -156,7 +156,7 @@ export default function AdminPage() {
     if (!deleteId) return;
     await fetch(`${BASE_URL}/admin/restaurants/${deleteId}`, {
       method: "DELETE",
-      headers: { "x-admin-token": token! },
+      headers: adminHeaders(token!),
     });
     setDeleteId(null);
     fetchList();

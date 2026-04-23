@@ -182,6 +182,7 @@ export default function ResultsPage() {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [visited, setVisited] = useState<Set<string>>(new Set());
   const [tab, setTab] = useState<Tab>("all");
+  const [showDismissed, setShowDismissed] = useState(false);
 
   // Charge les restaurants depuis l'historique du chat
   useEffect(() => {
@@ -254,7 +255,17 @@ export default function ResultsPage() {
     });
   }, []);
 
+  const restore = useCallback((id: string) => {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      saveSet(LS_DISMISSED, next);
+      return next;
+    });
+  }, []);
+
   const visible = restaurants.filter((r) => !dismissed.has(r.id));
+  const hiddenList = restaurants.filter((r) => dismissed.has(r.id));
   const displayed = tab === "favorites" ? visible.filter((r) => favorites.has(r.id)) : visible;
   const favCount = visible.filter((r) => favorites.has(r.id)).length;
 
@@ -364,6 +375,53 @@ export default function ResultsPage() {
               onDismiss={() => dismiss(r.id)}
             />
           ))
+        )}
+
+        {/* Restaurants masqués */}
+        {tab !== "favorites" && hiddenList.length > 0 && (
+          <div className="mt-2">
+            <button
+              onClick={() => setShowDismissed((v) => !v)}
+              className="w-full flex items-center justify-center gap-2 py-2 text-xs transition-all"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                {showDismissed
+                  ? <><path d="M18 15l-6-6-6 6"/></>
+                  : <><path d="M6 9l6 6 6-6"/></>
+                }
+              </svg>
+              {showDismissed ? "Masquer" : `Afficher les masqués (${hiddenList.length})`}
+            </button>
+
+            {showDismissed && hiddenList.map((r, i) => (
+              <div
+                key={r.id}
+                className="flex gap-2 items-stretch opacity-0 mt-2"
+                style={{ animation: "fadeSlideUp 0.25s ease forwards", animationDelay: `${i * 40}ms` }}
+              >
+                <Link href={`/restaurant/${r.id}`} className="flex-1 min-w-0">
+                  <div
+                    className="rounded-2xl p-4 flex flex-col gap-1.5 h-full"
+                    style={{ background: "var(--card)", border: "1px solid var(--border)", opacity: 0.5 }}
+                  >
+                    <p className="font-bold text-sm" style={{ fontFamily: "var(--font-display)" }}>{r.name}</p>
+                    <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{r.cuisine} · {r.zone ?? r.location.split(",")[0]}</p>
+                  </div>
+                </Link>
+                <div className="flex flex-col justify-center">
+                  <button
+                    onClick={() => restore(r.id)}
+                    title="Restaurer"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-90 text-xs font-bold"
+                    style={{ background: "var(--card)", border: "1px solid var(--border)", color: "var(--muted-foreground)" }}
+                  >
+                    ↩
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>}
     </div>

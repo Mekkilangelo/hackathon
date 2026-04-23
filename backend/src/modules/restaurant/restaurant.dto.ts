@@ -3,7 +3,8 @@ import { MichelinType } from "@prisma/client";
 
 export const RestaurantFiltersSchema = z.object({
   cuisine: z.string().optional(),
-  budget: z.coerce.number().int().min(1).max(4).optional(),
+  budget: z.coerce.number().int().min(1).max(4).optional(),   // priceRange <= budget (max)
+  priceMin: z.coerce.number().int().min(1).max(4).optional(), // priceRange >= priceMin (min)
   zone: z.string().optional(),
   location: z.string().optional(),
   country: z.string().optional(),

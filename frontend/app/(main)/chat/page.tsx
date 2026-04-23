@@ -124,6 +124,18 @@ export default function ChatPage() {
     }
   }, [sessionId, sending, scrollToBottom]);
 
+  const clearChat = useCallback(async () => {
+    const userId = localStorage.getItem("sebastianUserId");
+    if (!userId || !sessionId) return;
+    try {
+      await fetch(`${BASE_URL}/chat/sessions/${sessionId}`, { method: "DELETE" });
+    } catch { /* session peut déjà ne plus exister */ }
+    const { sessionId: newSid } = await apiPost<{ sessionId: string }>("/chat/sessions", { userId });
+    localStorage.setItem("sebastianSessionId", newSid);
+    setSessionId(newSid);
+    setMessages([]);
+  }, [sessionId]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
@@ -145,6 +157,21 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
+      {/* Barre d'actions */}
+      {messages.length > 0 && (
+        <div className="flex justify-end px-4 pt-2 pb-1">
+          <button
+            onClick={clearChat}
+            disabled={sending}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-all active:scale-95 disabled:opacity-40"
+            style={{ color: "var(--muted-foreground)", border: "1px solid var(--border)", background: "var(--card)" }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+            Effacer
+          </button>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
         {/* Message d'accueil si vide */}

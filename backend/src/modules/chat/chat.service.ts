@@ -30,20 +30,64 @@ export function extractCuisineFilter(message: string): string | undefined {
 }
 
 export function extractLocationFromMessage(message: string): string | undefined {
-  // Match "à Lyon", "à Grenoble", "en Provence", "au Japon", "dans Lyon" etc.
-  const match = message.match(/(?:^|\s)(?:à|a|en|au|aux|dans)\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\-]{2,}(?:\s+[A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿ]+)*)/);
+  const match = message.match(/(?:^|\s)(?:à|a|en|au|aux|dans|sur|chez|proche\s+de|autour\s+de)\s+([A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿA-ZÀ-Ÿ\-]{2,}(?:\s+[A-ZÀ-Ÿa-zà-ÿ][a-zà-ÿ]+)*)/);
   if (!match) return undefined;
   const candidate = match[1].trim();
   if (NON_LOCATIONS.has(candidate.toLowerCase())) return undefined;
   return candidate;
 }
 
-export function scoreRestaurant(r: Restaurant, profile: UserProfile | null): number {
+export function extractBudgetFromMessage(message: string): number | undefined {
+  const lower = message.toLowerCase();
+  // Signaux budget élevé
+  if (/cher|luxe|luxueux|gastronomique|haute\s+gastronomie|haut\s+de\s+gamme|étoilé|grande\s+table|grand\s+restaurant|prestige|exceptionnel/.test(lower)) {
+    return 3;
+  }
+  // Signaux budget bas
+  if (/pas\s+trop?\s+cher|abordable|économique|petit\s+budget|raisonnable|pas\s+cher|bon\s+march[ée]|accessible|sympa|simple/.test(lower)) {
+    return 1;
+  }
+  return undefined;
+}
+
+export function extractMichelinFilter(message: string): string | undefined {
+  const lower = message.toLowerCase();
+  if (/bib\s+gourmand/.test(lower)) return "BIB_GOURMAND";
+  if (/étoile\s+verte|green\s+star|écolo|durable|bio/.test(lower)) return "ETOILE_VERTE";
+  if (/étoilé|étoile\s+michelin|\d\s+étoile/.test(lower)) return "ETOILE";
+  return undefined;
+}
+
+export function extractIntentFromHistory(
+  messages: Array<{ role: string; content: string }>
+): { budget?: number; cuisine?: string; location?: string; michelinType?: string } {
+  // Scan les 4 derniers messages user du plus ancien au plus récent (le plus récent gagne)
+  const userMsgs = messages.filter((m) => m.role === "USER").slice(-4);
+  let budget: number | undefined;
+  let cuisine: string | undefined;
+  let location: string | undefined;
+  let michelinType: string | undefined;
+
+  for (const msg of userMsgs) {
+    const b = extractBudgetFromMessage(msg.content);
+    if (b !== undefined) budget = b;
+    const c = extractCuisineFilter(msg.content);
+    if (c) cuisine = c;
+    const l = extractLocationFromMessage(msg.content);
+    if (l) location = l;
+    const m = extractMichelinFilter(msg.content);
+    if (m) michelinType = m;
+  }
+  return { budget, cuisine, location, michelinType };
+}
+
+export function scoreRestaurant(r: Restaurant, profile: UserProfile | null, effectiveBudget?: number): number {
   if (!profile) return 50;
   let score = 0;
 
-  // Budget (30 pts) — priceRange 1-4, budget 1-3
-  const budgetDiff = Math.abs(r.priceRange - profile.budget);
+  // Budget (30 pts) — priceRange 1-4, budget 1-3 (override si spécifié dans la conversation)
+  const budget = effectiveBudget ?? profile.budget;
+  const budgetDiff = Math.abs(r.priceRange - budget);
   score += budgetDiff === 0 ? 30 : budgetDiff === 1 ? 18 : budgetDiff === 2 ? 8 : 0;
 
   // Cuisine (35 pts)
@@ -69,10 +113,15 @@ export function wantsRecommendations(message: string): boolean {
   const triggers = [
     "recommande", "conseille", "propose", "restaurant", "adresse", "manger",
     "dîner", "déjeuner", "brunch", "soir", "ce soir", "bonne table", "où aller",
-    "surprise", "étoile", "michelin", "bib", "envie",
+    "surprise", "étoile", "michelin", "bib", "envie", "faim", "table",
+    "gastronomique", "cuisine", "japonais", "français", "italien", "indien",
+    "mexicain", "asiatique", "méditerranéen", "cher", "abordable", "luxe",
   ];
   const lower = message.toLowerCase();
-  return triggers.some((t) => lower.includes(t));
+  if (triggers.some((t) => lower.includes(t))) return true;
+  // Déclenchement si seulement un lieu est mentionné (changement de ville)
+  if (extractLocationFromMessage(message)) return true;
+  return false;
 }
 
 export class ChatService {
@@ -115,6 +164,78 @@ export class ChatService {
 
     const systemPrompt = buildSebastianSystemPrompt(user.name, profile, city, events, visitedNames);
 
+    // ── Requête restaurants (avant LLM pour contextualiser la réponse) ──────
+    let restaurants: object[] | undefined;
+    let searchNote = "";
+
+    if (wantsRecommendations(userContent)) {
+      const msgCuisine   = extractCuisineFilter(userContent);
+      const msgLocation  = extractLocationFromMessage(userContent);
+      const msgBudget    = extractBudgetFromMessage(userContent);
+      const msgMichelin  = extractMichelinFilter(userContent);
+
+      const histCtx = extractIntentFromHistory(
+        historyAsc.map((m) => ({ role: m.role, content: m.content }))
+      );
+
+      const conversationBudget = msgBudget ?? histCtx.budget;
+      const effectiveCuisine   = msgCuisine  ?? histCtx.cuisine;
+      const effectiveLocation  = msgLocation ?? histCtx.location ?? city;
+      const effectiveMichelin  = msgMichelin ?? histCtx.michelinType;
+
+      const isHighBudget = conversationBudget === 3;
+      const baseFilters = {
+        budget:       isHighBudget ? undefined : (conversationBudget ?? profile?.budget),
+        priceMin:     isHighBudget ? 3 : undefined,
+        location:     effectiveLocation,
+        cuisine:      effectiveCuisine,
+        michelinType: effectiveMichelin as undefined,
+      };
+
+      // Fallback progressif
+      let results = await this.restaurantRepo.findAll(baseFilters);
+
+      if (!results.length && effectiveCuisine) {
+        results = await this.restaurantRepo.findAll({ ...baseFilters, cuisine: undefined });
+        if (results.length) searchNote = `Pas de cuisine ${effectiveCuisine} disponible à ${effectiveLocation}, voici d'autres tables sur place.`;
+      }
+      if (!results.length && effectiveLocation !== city) {
+        results = await this.restaurantRepo.findAll({ cuisine: effectiveCuisine, budget: baseFilters.budget, priceMin: baseFilters.priceMin });
+        if (results.length) searchNote = `Pas de résultat à ${effectiveLocation}, voici des suggestions depuis notre sélection générale.`;
+      }
+      if (!results.length) {
+        results = await this.restaurantRepo.findAll({ budget: baseFilters.budget, priceMin: baseFilters.priceMin });
+        if (results.length) searchNote = `Sélection élargie selon votre budget.`;
+      }
+      if (!results.length) {
+        results = await this.restaurantRepo.findAll({});
+        if (results.length) searchNote = `Voici notre sélection du moment.`;
+      }
+
+      if (results.length > 0) {
+        // Exclude restaurants already shown in this conversation
+        const shownIds = new Set<string>();
+        for (const msg of historyAsc) {
+          const meta = msg.metadata as { restaurants?: Array<{ id: string }> } | null;
+          if (meta?.restaurants) meta.restaurants.forEach((r) => shownIds.add(r.id));
+        }
+        const fresh = results.filter((r) => !shownIds.has(r.id));
+        const pool = fresh.length >= 3 ? fresh : results;
+
+        const scored = pool
+          .map((r) => ({ r, score: scoreRestaurant(r, profile, conversationBudget ?? profile?.budget) }))
+          .sort((a, b) => b.score - a.score + (Math.random() - 0.5) * 10)
+          .slice(0, 3);
+        restaurants = scored.map(({ r, score }) => ({
+          id: r.id, name: r.name, cuisine: r.cuisine, priceRange: r.priceRange,
+          michelinType: r.michelinType, greenStar: r.greenStar, imageUrl: r.imageUrl,
+          tags: r.tags, zone: r.zone, location: r.location, ambiance: r.ambiance,
+          matchScore: score, country: r.country,
+        }));
+      }
+    }
+
+    // ── LLM (avec contexte sur les résultats de recherche) ───────────────────
     const llmMessages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
       ...historyAsc.map((m) => ({
@@ -124,43 +245,12 @@ export class ChatService {
       { role: "user", content: userContent },
     ];
 
-    // Appel LLM
-    const sebastianText = await this.llm.chat(llmMessages);
-
-    // Recommandations si le message le demande
-    let restaurants: object[] | undefined;
-    if (wantsRecommendations(userContent)) {
-      const cuisine = extractCuisineFilter(userContent);
-      const messageLocation = extractLocationFromMessage(userContent);
-      const filters = {
-        budget: profile?.budget,
-        location: messageLocation ?? city,
-        cuisine,
-        michelinType: undefined as undefined,
-      };
-      const results = await this.restaurantRepo.findAll(filters);
-      if (results.length > 0) {
-        const scored = results
-          .map((r) => ({ r, score: scoreRestaurant(r, profile) }))
-          .sort((a, b) => b.score - a.score + (Math.random() - 0.5) * 10)
-          .slice(0, 3);
-        restaurants = scored.map(({ r, score }) => ({
-          id: r.id,
-          name: r.name,
-          cuisine: r.cuisine,
-          priceRange: r.priceRange,
-          michelinType: r.michelinType,
-          greenStar: r.greenStar,
-          imageUrl: r.imageUrl,
-          tags: r.tags,
-          zone: r.zone,
-          location: r.location,
-          ambiance: r.ambiance,
-          matchScore: score,
-          country: r.country,
-        }));
-      }
+    // Injecte une note de contexte si fallback utilisé
+    if (searchNote) {
+      llmMessages.push({ role: "system", content: `[Contexte recherche : ${searchNote} Adapte ta réponse en conséquence, sans mentionner les détails techniques.]` });
     }
+
+    const sebastianText = await this.llm.chat(llmMessages);
 
     // Sauvegarde
     await this.repo.saveMessage(sessionId, ChatRole.USER, userContent);
@@ -172,6 +262,10 @@ export class ChatService {
     );
 
     return sebastianMsg;
+  }
+
+  async deleteSession(sessionId: string) {
+    return this.repo.deleteSession(sessionId);
   }
 
   async getOrCreateSession(userId: string): Promise<string> {
