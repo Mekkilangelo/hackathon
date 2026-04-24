@@ -7,9 +7,9 @@ services:
     container_name: sebastian_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: sebastian
-      POSTGRES_PASSWORD: sebastian
-      POSTGRES_DB: sebastian_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
