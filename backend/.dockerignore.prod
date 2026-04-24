@@ -1,0 +1,93 @@
+# Fichier .dockerignore amélioré pour le backend
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+npm-debug.log
+npm-error.log
+yarn-error.log
+pnpm-debug.log
+pnpm-error.log
+
+# Build outputs
+dist
+*.tsbuildinfo
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+
+# Environment
+.env
+.env.*
+!.env.example
+.env.prod
+.env.prod.example
+
+# IDE & Editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs
+*.log
+lerna-debug.log
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Docker
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Database
+michelin_my_maps.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Development files
+.eslintignore
+.prettierignore
+tsconfig.json
+vitest.config.ts
+
+# Assets
+*.psd
+*.ai
+
+# Archive files
+*.zip
+*.tar.gz
+
+# Others
+LICENSE
+.editorconfig
+.env.local
+.env.*.local

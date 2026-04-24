@@ -1,0 +1,56 @@
+# ─── Stage 1: Builder ───────────────────────────────────────────────────────
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
+COPY package*.json ./
+
+# Install dependencies with legacy peer deps flag
+RUN npm ci --legacy-peer-deps && \
+    npm cache clean --force
+
+COPY . .
+
+# Build Next.js with optimization
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NODE_ENV=production
+
+RUN npm run build
+
+# ─── Stage 2: Runtime ───────────────────────────────────────────────────────
+FROM node:20-alpine AS runtime
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    curl \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Copy only necessary files from builder
+COPY --from=builder --chown=nodejs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nodejs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nodejs:nodejs /app/public ./public
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
+
+# Set environment
+ENV NODE_ENV=production \
+    PORT=3000
+
+USER nodejs
+
+EXPOSE 3000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+CMD ["node", "server.js"]

@@ -1,0 +1,105 @@
+# Fichier .dockerignore amélioré pour le frontend
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+npm-debug.log
+npm-error.log
+yarn-error.log
+pnpm-debug.log
+pnpm-error.log
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Development
+.env
+.env.*
+!.env.example
+.env.prod
+.env.prod.example
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+__tests__
+__mocks__
+
+# IDE & Editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.editorconfig
+
+# Logs
+logs
+*.log
+lerna-debug.log
+npm-debug.log*
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Docker
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Development tools
+Makefile
+deploy.sh
+test-setup.sh
+
+# Assets (large files)
+*.psd
+*.ai
+*.sketch
+
+# Archive files
+*.zip
+*.tar.gz
+
+# Others
+LICENSE
+.turboignore
+
+# Next.js specific
+.next/cache
+.next/trace
+
+# Type checking
+*.tsbuildinfo
+
+# Linting
+.eslintignore
+.prettierignore

@@ -1,0 +1,60 @@
+# .gitignore additions for Production Docker Setup
+
+# Environment files
+.env.prod
+.env.prod.local
+.env.*.local
+
+# Backups
+backups/
+*.sql
+*.sql.gz
+*.dump
+
+# Docker volumes (if local)
+postgres_data_prod/
+
+# Nginx SSL certificates
+nginx/ssl/
+!nginx/ssl/.gitkeep
+
+# Logs
+*.log
+logs/
+docker-logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# IDE
+.vscode-server/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test outputs
+test-results/
+coverage/
+
+# Node modules (shouldn't be needed but just in case)
+node_modules/
+
+# Dist/Build (shouldn't be needed but just in case)
+dist/
+build/
+out/
+.next/
+
+# Cache
+.cache/
+*.cache
+
+# Development overrides
+docker-compose.override.yml
