@@ -6,6 +6,7 @@ import router from "./router";
 import swaggerSpec from "./swagger";
 import { errorHandler } from "./shared/middleware/error-handler";
 import { startEventReminderScheduler } from "./shared/scheduler/event-reminder";
+import { startInstantMichelinScheduler } from "./shared/scheduler/instant-michelin";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(errorHandler);
 app.listen(config.port, () => {
   console.log(`🎩 Sebastian API running on http://localhost:${config.port}`);
   startEventReminderScheduler();
+  startInstantMichelinScheduler();
 });
 
 export default app;

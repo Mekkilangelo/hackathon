@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../shared/database/prisma";
 import { adminAuth } from "../../shared/middleware/admin-auth";
 import { MichelinType } from "@prisma/client";
+import { sendInstantMichelin } from "../../shared/scheduler/instant-michelin";
 
 const router = Router();
 router.use(adminAuth);
@@ -120,6 +121,14 @@ router.delete("/restaurants/:id", async (req: Request, res: Response, next: Next
   } catch (err) {
     next(err);
   }
+});
+
+// POST /api/admin/instant-michelin/trigger
+router.post("/instant-michelin/trigger", async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    await sendInstantMichelin();
+    res.json({ ok: true, message: "Instant Michelin envoyé" });
+  } catch (err) { next(err); }
 });
 
 export default router;
